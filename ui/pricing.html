@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Checkup · Pricing</title>
+<script src="state.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;450;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .hero { text-align: center; padding: 72px 0 40px; }
+  .hero .lede { margin: 0 auto 32px; }
+  .billing { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; padding: 3px; gap: 2px; }
+  .billing button { background: none; border: 0; color: var(--text-3); font: inherit; font-size: 13px; padding: 7px 16px; border-radius: 999px; cursor: pointer; display: flex; gap: 8px; align-items: center; }
+  .billing button[aria-pressed="true"] { background: var(--text); color: #000; }
+  .save { font-family: var(--mono); font-size: 10px; letter-spacing: .05em; color: var(--ok); }
+  .billing button[aria-pressed="true"] .save { color: #1d6b2c; }
+
+  .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 880px; margin: 0 auto 96px; }
+  .plan { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 28px; display: flex; flex-direction: column; position: relative; }
+  .plan.pro { border-color: transparent; }
+  .plan .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .071em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .plan .badge { color: #000; background: var(--text); border-radius: 999px; padding: 2px 8px; font-size: 10px; }
+  .plan h2 { font-size: 28px; margin-bottom: 6px; }
+  .plan .for { color: var(--text-2); margin-bottom: 24px; min-height: 42px; }
+  .price { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; }
+  .price b { font-size: 48px; font-weight: 450; letter-spacing: -0.05em; line-height: 1; }
+  .price span { color: var(--text-3); }
+  .price-note { font-family: var(--mono); font-size: 12px; color: var(--text-3); margin-bottom: 24px; min-height: 18px; }
+  .plan .btn { width: 100%; height: 44px; margin-bottom: 24px; }
+  .plan h3 { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: .071em; text-transform: uppercase; color: var(--text-3); margin: 4px 0 12px; }
+  .plan ul { list-style: none; display: grid; gap: 10px; margin-bottom: 20px; }
+  .plan li { display: grid; grid-template-columns: 20px 1fr; gap: 6px; color: var(--text); }
+  .plan li::before { content: "✓"; color: var(--ok); }
+  .plan li.no { color: var(--text-3); }
+  .plan li.no::before { content: "–"; color: var(--text-3); }
+
+  .section-title { text-align: center; margin-bottom: 32px; }
+  .section-title h2 { font-size: 30px; }
+  table.compare { width: 100%; max-width: 880px; margin: 0 auto 96px; border-collapse: collapse; }
+  .compare th, .compare td { padding: 14px 16px; border-bottom: 1px solid var(--line); text-align: left; }
+  .compare thead th { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: .071em; text-transform: uppercase; color: var(--text-3); }
+  .compare th:not(:first-child), .compare td:not(:first-child) { text-align: center; width: 160px; }
+  .compare td:first-child { color: var(--text); }
+  .compare td:first-child small { display: block; color: var(--text-3); font-size: 12px; }
+  .compare td { color: var(--text-2); }
+  .compare .y { color: var(--ok); }
+  .compare .n { color: var(--text-3); }
+  .compare .group td { font-family: var(--mono); font-size: 11px; letter-spacing: .071em; text-transform: uppercase; color: var(--text-3); padding-top: 28px; }
+  .compare .pro-col { background: rgba(255,255,255,.02); }
+
+  .faq { max-width: 720px; margin: 0 auto 64px; }
+  .faq details { border-bottom: 1px solid var(--line); }
+  .faq summary { list-style: none; cursor: pointer; padding: 18px 0; font-size: 16px; display: flex; justify-content: space-between; gap: 16px; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; font-family: var(--mono); color: var(--text-3); }
+  .faq details[open] summary::after { content: "–"; }
+  .faq details p { color: var(--text-2); padding: 0 0 18px; max-width: 620px; }
+
+  @media (max-width: 760px) {
+    .plans { grid-template-columns: 1fr; }
+    .compare th:not(:first-child), .compare td:not(:first-child) { width: 72px; padding: 12px 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="connect.html"><span class="mark" aria-hidden="true"></span>Privacy Checkup</a>
+    <div class="account"><span class="avatar">A</span>aarav@gmail.com</div>
+  </nav>
+
+  <header class="hero">
+    <p class="eyebrow">Pricing</p>
+    <h1>Check for free. Pay to be watched over.</h1>
+    <p class="lede">Every problem we find, and how to fix it, is always free. Pro keeps checking for you and tells you the moment something new turns up.</p>
+    <div class="billing" role="group" aria-label="Billing period">
+      <button type="button" aria-pressed="false" data-b="m">Monthly</button>
+      <button type="button" aria-pressed="true" data-b="y">Yearly <span class="save">SAVE 44%</span></button>
+    </div>
+  </header>
+
+  <div class="plans">
+    <article class="plan">
+      <p class="tag"><span>Free</span></p>
+      <h2>Free</h2>
+      <p class="for">For a one-time look at what's exposed, whenever you want.</p>
+      <div class="price"><b>₹0</b><span>forever</span></div>
+      <p class="price-note">No card needed</p>
+      <a class="btn btn-ghost" href="connect.html">Start free check</a>
+      <h3>Included</h3>
+      <ul>
+        <li>Full check: files, email warnings, email leaks</li>
+        <li>Every problem, with "fix it now" steps</li>
+        <li>"Avoid it next time" tips</li>
+        <li>Run the check again by hand, any time</li>
+        <li>1 connected account (Google or Microsoft)</li>
+      </ul>
+      <h3>Not included</h3>
+      <ul>
+        <li class="no">Automatic checks</li>
+        <li class="no">Alerts when something new turns up</li>
+        <li class="no">Saved history of past checks</li>
+        <li class="no">Stolen-password (malware) leak data</li>
+      </ul>
+    </article>
+
+    <div class="frame">
+      <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span>
+      <span class="corner br" aria-hidden="true"></span><span class="corner bl" aria-hidden="true"></span>
+      <article class="plan pro" style="height:100%">
+        <p class="tag"><span>Pro</span><span class="badge">Most popular</span></p>
+        <h2>Pro</h2>
+        <p class="for">For people who want their accounts watched, without having to remember.</p>
+        <div class="price"><b id="amt">₹999</b><span id="per">/ year</span></div>
+        <p class="price-note" id="note">That's ₹83 a month · GST included</p>
+        <a class="btn btn-primary" href="checkout.html" id="buy">Get Pro</a>
+        <h3>Everything in Free, plus</h3>
+        <ul>
+          <li>Automatic check every week</li>
+          <li>Instant alerts by email or SMS</li>
+          <li>Up to 5 connected accounts: work, family, Microsoft</li>
+          <li>Saved history, with what you've already fixed</li>
+          <li>Stolen-password (malware) leak data</li>
+          <li>Monthly "safety habits" report</li>
+          <li>Priority email support</li>
+        </ul>
+        <p class="price-note" style="margin:auto 0 0">Cancel any time · full refund within 7 days</p>
+      </article>
+    </div>
+  </div>
+
+  <div class="section-title"><p class="eyebrow">Compare</p><h2>Free vs Pro, side by side</h2></div>
+  <table class="compare">
+    <thead><tr><th>Feature</th><th>Free</th><th class="pro-col">Pro</th></tr></thead>
+    <tbody>
+      <tr class="group"><td colspan="3">The check</td></tr>
+      <tr><td>Files open to anyone or to outsiders<small>Google Drive, OneDrive</small></td><td class="y">✓</td><td class="y pro-col">✓</td></tr>
+      <tr><td>Missed security emails<small>Gmail, Outlook</small></td><td class="y">✓</td><td class="y pro-col">✓</td></tr>
+      <tr><td>Email found in known leaks</td><td class="y">✓</td><td class="y pro-col">✓</td></tr>
+      <tr><td>Stolen-password leak data<small>Passwords taken by viruses on computers</small></td><td class="n">–</td><td class="y pro-col">✓</td></tr>
+      <tr class="group"><td colspan="3">Help fixing it</td></tr>
+      <tr><td>"Fix it now" steps for every problem</td><td class="y">✓</td><td class="y pro-col">✓</td></tr>
+      <tr><td>"Avoid it next time" tips</td><td class="y">✓</td><td class="y pro-col">✓</td></tr>
+      <tr><td>Monthly safety habits report</td><td class="n">–</td><td class="y pro-col">✓</td></tr>
+      <tr class="group"><td colspan="3">Watching over you</td></tr>
+      <tr><td>How often we check</td><td>When you ask</td><td class="pro-col">Every week</td></tr>
+      <tr><td>Alerts for new problems</td><td class="n">–</td><td class="pro-col">Email &amp; SMS</td></tr>
+      <tr><td>Saved history</td><td class="n">–</td><td class="pro-col">12 months</td></tr>
+      <tr class="group"><td colspan="3">Accounts &amp; support</td></tr>
+      <tr><td>Connected accounts</td><td>1</td><td class="pro-col">Up to 5</td></tr>
+      <tr><td>Support</td><td>Help centre</td><td class="pro-col">Priority email</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-title"><p class="eyebrow">Questions</p><h2>Before you decide</h2></div>
+  <div class="faq">
+    <details open><summary>Is the free plan really free?</summary><p>Yes. No card, no trial that turns into a charge. You get the full check and every fix, as often as you want to run it yourself.</p></details>
+    <details><summary>Why isn't "you've been leaked" behind a paywall?</summary><p>Because you deserve to know. We'd rather you trust us than feel tricked. Pro is for convenience: we keep watching so you don't have to.</p></details>
+    <details><summary>Can I cancel Pro?</summary><p>Any time, from your Account page, in two clicks. You keep Pro until the end of the period you paid for. If you cancel in the first 7 days, you get a full refund.</p></details>
+    <details><summary>How do I pay?</summary><p>UPI, debit or credit card, or net banking. Payments are handled by a secure payment provider; we never see your card number.</p></details>
+    <details><summary>What happens to my data if I stop paying?</summary><p>You go back to Free. Saved history is deleted after 30 days unless you download it first.</p></details>
+    <details><summary>Do you offer family plans?</summary><p>Pro covers up to 5 accounts, so you can add family members' accounts with their permission.</p></details>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+  const P = { m: ['₹149', '/ month', 'Billed monthly · GST included'], y: ['₹999', '/ year', "That's ₹83 a month · GST included"] };
+  document.querySelectorAll('.billing button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.billing button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    const [a, p, n] = P[b.dataset.b];
+    document.getElementById('amt').textContent = a;
+    document.getElementById('per').textContent = p;
+    document.getElementById('note').textContent = n;
+  }));
+  let billing = 'y';
+  document.querySelectorAll('.billing button').forEach(b => b.addEventListener('click', () => billing = b.dataset.b));
+  const st = PC.get(), buy = document.getElementById('buy');
+  buy.addEventListener('click', e => {
+    e.preventDefault();
+    if (st.plan === 'pro') location.href = 'account.html#checks';
+    else if (!st.session) location.href = 'connect.html?signin=1';
+    else location.href = 'checkout.html?b=' + billing;
+  });
+  if (st.plan === 'pro') { buy.textContent = "You're on Pro · Manage plan"; buy.className = 'btn btn-ghost'; }
+  if (st.session) {
+    const free = document.querySelector('.plan:not(.pro) .btn');
+    free.textContent = st.plan === 'pro' ? 'Included in Pro' : 'Run my free check';
+    free.href = st.checked ? 'results.html' : 'ready.html';
+  }
+</script>
+</body>
+</html>

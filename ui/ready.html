@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Checkup · Ready</title>
+<script src="state.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;450;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  main { display: grid; place-items: center; text-align: center; padding: 72px 0 120px; }
+  .connected { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 12px; color: var(--text-2); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; margin-bottom: 28px; }
+  h1 { max-width: 640px; }
+  .lede { margin: 0 auto 40px; }
+  .frame { width: 100%; max-width: 560px; margin-bottom: 40px; text-align: left; }
+  .row { display: grid; grid-template-columns: 36px 1fr auto; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--line); position: relative; z-index: 1; }
+  .row:last-child { border-bottom: 0; }
+  .row .box { width: 36px; height: 36px; border: 1px solid var(--line-strong); border-radius: 6px; display: grid; place-items: center; color: var(--text); }
+  .row strong { font-weight: 500; display: block; }
+  .row small { color: var(--text-3); font-size: 13px; }
+  .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .071em; color: var(--text-3); text-transform: uppercase; }
+  .fine { margin-top: 14px; font-family: var(--mono); font-size: 12px; color: var(--text-3); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="connect.html"><span class="mark" aria-hidden="true"></span>Privacy Checkup</a>
+    <div class="account"><span class="avatar">A</span><span id="acc">aarav@gmail.com</span></div>
+  </nav>
+
+  <main>
+    <span class="connected"><span class="dot" aria-hidden="true"></span><span id="prov">Google account connected</span></span>
+    <p class="eyebrow">Step 2 of 3</p>
+    <h1>You're all set. One click to start.</h1>
+    <p class="lede">We'll run all three checks at once. It usually takes under a minute.</p>
+
+    <div class="frame">
+      <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span>
+      <span class="corner br" aria-hidden="true"></span><span class="corner bl" aria-hidden="true"></span>
+      <section class="panel" aria-label="Checks that will run">
+        <div class="scan" aria-hidden="true"></div>
+        <div class="row">
+          <span class="box"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 3h7l6 10.5-3.5 6H6l-3.5-6z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8.5 3l6 10.5H21M15.5 3L9.3 13.5 6 19.5M2.5 13.5h12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+          <div><strong>Files</strong><small id="d-files">Google Drive files open to anyone or to outsiders</small></div>
+          <span class="tag">Ready</span>
+        </div>
+        <div class="row">
+          <span class="box"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 6.5l9 7 9-7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+          <div><strong>Email</strong><small id="d-mail">Security warnings in Gmail you may have missed</small></div>
+          <span class="tag">Ready</span>
+        </div>
+        <div class="row">
+          <span class="box"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l7.5 3v5.7c0 4.6-3.2 8.3-7.5 9.7-4.3-1.4-7.5-5.1-7.5-9.7V5.8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 8v4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="15.6" r="1" fill="currentColor"/></svg></span>
+          <div><strong>Email leaks</strong><small id="d-leak">Is aarav@gmail.com in a known leak?</small></div>
+          <span class="tag">Ready</span>
+        </div>
+      </section>
+    </div>
+
+    <a class="btn btn-primary btn-lg" href="scanning.html">Start check</a>
+    <p class="fine">We only read. Nothing is changed or saved.</p>
+  </main>
+</div>
+
+<div class="demo-bar" aria-label="Demo screens">
+  <a href="connect.html">1 Welcome</a><a href="ready.html" aria-current="page">2 Start</a><a href="scanning.html">3 Checking</a><a href="results.html">4 Problems</a><a href="clear.html">5 All clear</a><a href="pricing.html">Pricing</a><a href="account.html">Account</a>
+</div>
+<script>
+  const st = PC.get(), L = PC.labels();
+  const set = (id, t) => document.getElementById(id).textContent = t;
+  set('prov', L.name + ' account connected');
+  set('d-files', L.files + ' files open to anyone or to outsiders');
+  set('d-mail', 'Security warnings in ' + L.mail + ' you may have missed');
+  set('d-leak', 'Is ' + st.email + ' in a known leak?');
+  // Checks turned off in Account settings are skipped.
+  const keys = ['files', 'email', 'leaks'];
+  document.querySelectorAll('.row .tag').forEach((t, i) => {
+    if (!st.settings[keys[i]]) { t.textContent = 'Off'; t.closest('.row').style.opacity = .45; }
+  });
+  const count = keys.filter(k => st.settings[k]).length;
+  if (count && count < 3) document.querySelector('.lede').textContent =
+    `We'll run ${count === 2 ? 'both switched-on checks' : 'the one switched-on check'} at once. It usually takes under a minute.`;
+  if (!count) {
+    const b = document.querySelector('.btn-lg');
+    b.textContent = 'Turn on a check in settings'; b.href = 'account.html#checks';
+  }
+</script>
+<script src="shared.js"></script>
+</body>
+</html>

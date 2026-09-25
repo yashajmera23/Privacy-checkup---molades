@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Checkup · Account</title>
+<script src="state.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;450;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 56px; padding: 48px 0 40px; }
+  aside { position: sticky; top: 24px; align-self: start; }
+  aside h1 { font-size: 30px; letter-spacing: -0.04em; margin-bottom: 24px; }
+  aside nav { display: block; height: auto; }
+  aside a { display: block; padding: 7px 10px; margin: 0 -10px; border-radius: 4px; color: var(--text-3); text-decoration: none; font-size: 14px; }
+  aside a:hover, aside a.on { color: var(--text); background: var(--surface-2); }
+  section.block { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); margin-bottom: 24px; scroll-margin-top: 24px; }
+  .block-head { padding: 20px 24px; border-bottom: 1px solid var(--line); }
+  .block-head p { color: var(--text-2); margin-top: 4px; }
+  .block-body { padding: 8px 24px; }
+  .block-foot { padding: 14px 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #070707; border-radius: 0 0 8px 8px; }
+  .block-foot small { color: var(--text-3); font-size: 13px; }
+
+  .field { display: grid; grid-template-columns: 200px 1fr; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .field:last-child { border-bottom: 0; }
+  .field label { color: var(--text-2); }
+  .field small { display: block; color: var(--text-3); font-size: 12px; }
+  input[type=text], input[type=email], input[type=tel], select { width: 100%; max-width: 380px; height: 38px; background: var(--bg); border: 1px solid var(--line-strong); border-radius: 6px; color: var(--text); font: inherit; padding: 0 12px; }
+  input:focus, select:focus { outline: none; border-color: var(--text-2); box-shadow: 0 0 0 3px rgba(255,255,255,.08); }
+  input[readonly] { color: var(--text-3); }
+
+  .conn { display: grid; grid-template-columns: 40px 1fr auto; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--line); }
+  .conn:last-child { border-bottom: 0; }
+  .logo-box { width: 40px; height: 40px; border-radius: 8px; background: #fff; display: grid; place-items: center; }
+  .logo-box svg { width: 22px; height: 22px; }
+  .logo-box.add { background: none; border: 1px dashed var(--line-strong); color: var(--text-3); font-size: 20px; }
+  .conn strong { font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .conn .meta { font-family: var(--mono); font-size: 12px; color: var(--text-3); }
+  .pill { font-family: var(--mono); font-size: 10px; letter-spacing: .071em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; }
+  .pill.on { color: var(--ok); border-color: rgba(69,165,87,.4); }
+  .pill.off { color: var(--text-3); border-color: var(--line-strong); }
+  .pill.pro { color: var(--text); border-color: var(--line-strong); background: var(--surface-2); }
+  .conn .btns { display: flex; gap: 8px; }
+
+  .toggle-row { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--line); }
+  .toggle-row:last-child { border-bottom: 0; }
+  .toggle-row p { color: var(--text-3); font-size: 13px; }
+  .switch { position: relative; width: 36px; height: 20px; flex: none; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch span { position: absolute; inset: 0; background: var(--line-strong); border-radius: 999px; cursor: pointer; transition: background .2s; }
+  .switch span::after { content: ""; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--text); transition: transform .2s; }
+  .switch input:checked + span { background: var(--ok); }
+  .switch input:checked + span::after { transform: translateX(16px); }
+  .switch input:disabled + span { opacity: .4; cursor: not-allowed; }
+  .switch input:focus-visible + span { outline: 2px solid var(--text); outline-offset: 2px; }
+
+  .danger-zone { border-color: rgba(255,77,77,.3); }
+  .danger-zone .block-head h2 { color: var(--danger); }
+  .btn-outline-danger { background: none; border: 1px solid rgba(255,77,77,.4); color: var(--danger); height: 36px; padding: 0 14px; }
+  .btn-outline-danger:hover { background: var(--danger-bg); }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; gap: 24px; padding-top: 24px; }
+    .layout > * { min-width: 0; }
+    aside { position: static; }
+    aside nav { display: flex; gap: 4px; overflow-x: auto; height: auto; }
+    aside a { white-space: nowrap; margin: 0; }
+    .field { grid-template-columns: 1fr; gap: 6px; }
+    .conn { grid-template-columns: 40px 1fr; }
+    .conn .btns { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="connect.html"><span class="mark" aria-hidden="true"></span>Privacy Checkup</a>
+    <div class="account"><span class="avatar">A</span>aarav@gmail.com</div>
+  </nav>
+
+  <div class="layout">
+    <aside>
+      <h1>Account</h1>
+      <nav aria-label="Account sections">
+        <a href="#profile" class="on">Profile</a>
+        <a href="#connections">Connected accounts</a>
+        <a href="#checks">Checks &amp; alerts</a>
+        <a href="#data">Your data</a>
+        <a href="#danger">Log out &amp; delete</a>
+      </nav>
+    </aside>
+
+    <div>
+      <!-- Profile -->
+      <section class="block" id="profile">
+        <div class="block-head"><h2>Profile</h2><p>How we address you, and where we send alerts.</p></div>
+        <form class="block-body" id="profileForm">
+          <div class="field"><label for="name">Full name</label><input type="text" id="name" autocomplete="name"></div>
+          <div class="field"><label for="email">Sign-in email<small>From your connected Google account</small></label><input type="email" id="email" readonly></div>
+          <div class="field"><label for="alert">Alert email<small>Where we send new-problem alerts</small></label><input type="email" id="alert" autocomplete="email"></div>
+          <div class="field"><label for="phone">Phone (optional)<small>For SMS alerts, Pro only</small></label><input type="tel" id="phone" placeholder="+91 98xxx xxxxx" autocomplete="tel"></div>
+          <div class="field"><label for="lang">Language</label>
+            <select id="lang"><option>English</option><option>हिन्दी (Hindi)</option><option>मराठी (Marathi)</option><option>தமிழ் (Tamil)</option></select></div>
+        </form>
+        <div class="block-foot"><small id="saveState">All changes saved</small><button class="btn btn-primary btn-sm" form="profileForm" type="submit">Save changes</button></div>
+      </section>
+
+      <!-- Connections -->
+      <section class="block" id="connections">
+        <div class="block-head"><h2>Connected accounts</h2><p>We check these accounts. Removing one stops all access right away.</p></div>
+        <div class="block-body" id="connList"></div>
+      </section>
+
+      <!-- Checks & alerts -->
+      <section class="block" id="checks">
+        <div class="block-head"><h2>Checks &amp; alerts</h2><p>Choose what we check, and how we tell you.</p></div>
+        <div class="block-body">
+          <div class="toggle-row"><div>Check files<p>Files and folders open to anyone or to people outside.</p></div><label class="switch"><input type="checkbox" data-key="files" aria-label="Check files"><span></span></label></div>
+          <div class="toggle-row"><div>Check email for security warnings<p>Sign-in alerts, password changes, leak notices from other companies.</p></div><label class="switch"><input type="checkbox" data-key="email" aria-label="Check email"><span></span></label></div>
+          <div class="toggle-row"><div>Check for email leaks<p>Compare your email against known leaks.</p></div><label class="switch"><input type="checkbox" data-key="leaks" aria-label="Check leaks"><span></span></label></div>
+          <div class="toggle-row"><div>Automatic weekly check <span class="pill pro">Pro</span><p>We re-check every week, so you don't have to remember.</p></div><label class="switch"><input type="checkbox" data-key="weekly" data-pro aria-label="Weekly check (Pro)"><span></span></label></div>
+          <div class="toggle-row"><div>Instant alerts <span class="pill pro">Pro</span><p>Email or SMS as soon as something new turns up.</p></div><label class="switch"><input type="checkbox" data-key="alerts" data-pro aria-label="Instant alerts (Pro)"><span></span></label></div>
+        </div>
+        <div class="block-foot"><small id="planTxt">You're on the <b>Free</b> plan.</small><span id="planBtns"><a class="btn btn-ghost btn-sm" href="pricing.html">See plans</a></span></div>
+      </section>
+
+      <!-- Data -->
+      <section class="block" id="data">
+        <div class="block-head"><h2>Your data</h2><p>We keep as little as possible. Here's what we hold, and your rights over it.</p></div>
+        <div class="block-body">
+          <div class="toggle-row"><div>Keep my past results<p>Off by default. When off, results are deleted as soon as you leave the page.</p></div><label class="switch"><input type="checkbox" data-key="keep" aria-label="Keep past results"><span></span></label></div>
+          <div class="toggle-row"><div>Download my data<p>A copy of everything this demo has saved about you, as a file.</p></div><button class="btn btn-ghost btn-sm" id="dl">Download</button></div>
+          <div class="toggle-row"><div>Correct or update my data<p>Change anything in your profile above, or contact our grievance officer.</p></div><a class="btn btn-ghost btn-sm" href="privacy.html#rights">Your rights</a></div>
+        </div>
+      </section>
+
+      <!-- Danger -->
+      <section class="block danger-zone" id="danger">
+        <div class="block-head"><h2>Log out &amp; delete</h2></div>
+        <div class="block-body">
+          <div class="toggle-row"><div>Log out<p>Sign out on this device. Connected accounts stay connected.</p></div><button class="btn btn-ghost btn-sm" onclick="logout()">Log out</button></div>
+          <div class="toggle-row"><div>Delete my account<p>Removes access to all connected accounts and permanently deletes everything we hold about you.</p></div><button class="btn btn-outline-danger" id="del">Delete account</button></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+  const st = PC.get();
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const pro = st.plan === 'pro';
+
+  // Profile
+  $('name').value = st.name;
+  $('email').value = st.email;
+  document.querySelector('label[for=email] small').textContent = 'From your connected ' + PC.labels().name + ' account';
+  $('alert').value = st.alertEmail || st.email;
+  $('phone').value = st.phone;
+  $('lang').value = st.lang;
+  const saveState = $('saveState');
+  $('profileForm').addEventListener('input', () => saveState.textContent = 'Unsaved changes');
+  $('profileForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('name').value.trim(), alertEmail = $('alert').value.trim();
+    if (!name) { $('name').focus(); return toast('Please enter your name.'); }
+    if (!/^\S+@\S+\.\S+$/.test(alertEmail)) { $('alert').focus(); return toast('Please enter a valid alert email.'); }
+    PC.set({ name, alertEmail, phone: $('phone').value.trim(), lang: $('lang').value });
+    saveState.textContent = 'All changes saved';
+    toast('Profile saved.');
+    // Refresh the name in the top-right menu.
+    document.querySelector('.acct-btn .avatar').textContent = name[0].toUpperCase();
+    document.querySelector('.menu-head strong').textContent = name;
+  });
+
+  // Connected accounts
+  const LOGO = {
+    google: '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.6 13.3l7.9 6.1C12.4 13.7 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.8c4.3-4 6.9-9.9 6.9-17.2z"/><path fill="#FBBC05" d="M10.5 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.8c-2.1 1.4-4.8 2.3-8.5 2.3-6.3 0-11.6-4.2-13.5-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>',
+    microsoft: '<svg viewBox="0 0 21 21" aria-hidden="true"><rect width="10" height="10" fill="#f25022"/><rect x="11" width="10" height="10" fill="#7fba00"/><rect y="11" width="10" height="10" fill="#00a4ef"/><rect x="11" y="11" width="10" height="10" fill="#ffb900"/></svg>',
+  };
+  const INFO = { google: ['Google', 'Drive, Gmail', 'Gmail, Google Drive'], microsoft: ['Microsoft', 'OneDrive, Outlook', 'Outlook, Hotmail, OneDrive'] };
+  const connectedCount = () => Object.values(st.conns).filter(Boolean).length;
+
+  function renderConns() {
+    const rows = ['google', 'microsoft'].map(p => {
+      const email = st.conns[p], [name, on, off] = INFO[p], main = st.session === p;
+      if (!email) {
+        // Free plan allows one connected account.
+        const locked = !pro && connectedCount() >= 1;
+        return `<div class="conn"><span class="logo-box">${LOGO[p]}</span>
+          <div><strong>${name} <span class="pill off">Not connected</span>${locked ? ' <span class="pill pro">Pro</span>' : ''}</strong><div class="meta">${off}</div></div>
+          <div class="btns">${locked ? '<a class="btn btn-ghost btn-sm" href="pricing.html">Upgrade to connect</a>' : `<a class="btn btn-primary btn-sm" href="${p}.html?add=1">Connect</a>`}</div></div>`;
+      }
+      return `<div class="conn"><span class="logo-box">${LOGO[p]}</span>
+        <div><strong>${name} <span class="pill on">Connected</span>${main ? ' <span class="pill off">Signed in</span>' : ''}</strong><div class="meta">${esc(email)} · ${on}${st.checked && main ? ' · last checked today' : ''}</div></div>
+        <div class="btns">${main ? '<a class="btn btn-ghost btn-sm" href="scanning.html">Check now</a>' : `<button class="btn btn-ghost btn-sm" data-switch="${p}">Switch to this</button>`}<button class="btn btn-ghost btn-sm" data-remove="${p}">Remove</button></div></div>`;
+    });
+    st.extra.forEach((x, i) => rows.push(`<div class="conn"><span class="logo-box">${LOGO[x.provider]}</span>
+      <div><strong>${INFO[x.provider][0]} <span class="pill on">Connected</span> <span class="pill off">Extra</span></strong><div class="meta">${esc(x.email)} · ${INFO[x.provider][1]}</div></div>
+      <div class="btns"><button class="btn btn-ghost btn-sm" data-extra="${i}">Remove</button></div></div>`));
+    const used = connectedCount() + st.extra.length, full = used >= 5;
+    rows.push(`<div class="conn"><span class="logo-box add" aria-hidden="true">+</span>
+      <div><strong>Add another account${pro ? '' : ' <span class="pill pro">Pro</span>'}</strong><div class="meta">${pro ? `${used} of 5 accounts used` : 'Check a work or family account too'}</div></div>
+      <div class="btns">${!pro ? '<a class="btn btn-ghost btn-sm" href="pricing.html">Upgrade to Pro</a>' : full ? '<span class="meta">Limit reached</span>' : '<a class="btn btn-ghost btn-sm" href="google.html?add=1">Add Google</a><a class="btn btn-ghost btn-sm" href="microsoft.html?add=1">Add Microsoft</a>'}</div></div>`);
+    $('connList').innerHTML = rows.join('');
+  }
+  renderConns();
+
+  $('connList').addEventListener('click', async e => {
+    const sw = e.target.closest('[data-switch]'), rm = e.target.closest('[data-remove]'), ex = e.target.closest('[data-extra]');
+    if (ex) {
+      const x = st.extra[+ex.dataset.extra];
+      const ok = await confirmBox({ title: 'Remove this account?', body: `We will stop checking ${x.email} and lose access immediately.`, ok: 'Remove access', danger: true });
+      if (!ok) return;
+      PC.set({ extra: st.extra.filter((_, i) => i !== +ex.dataset.extra) });
+      renderConns();
+      toast('Account removed.');
+      return;
+    }
+    if (sw) {
+      const p = sw.dataset.switch;
+      PC.set({ session: p, email: st.conns[p], checked: false });
+      toast('Switched to ' + INFO[p][0] + '.');
+      setTimeout(() => location.reload(), 600);
+    }
+    if (rm) {
+      const p = rm.dataset.remove, name = INFO[p][0];
+      const last = connectedCount() === 1;
+      const ok = await confirmBox({ title: `Remove ${name} account?`,
+        body: `We will stop checking ${st.conns[p]} and lose access immediately.` + (last ? ' This is your only connected account, so you will be signed out.' : ' You can connect it again any time.'),
+        ok: 'Remove access', danger: true });
+      if (!ok) return;
+      st.conns[p] = null;
+      if (last) { PC.set({ session: null, checked: false }); location.href = 'connect.html?removed=1'; return; }
+      if (st.session === p) {
+        const other = p === 'google' ? 'microsoft' : 'google';
+        PC.set({ session: other, email: st.conns[other], checked: false });
+        toast(`${name} removed. You're now using ${INFO[other][0]}.`);
+        setTimeout(() => location.reload(), 900);
+        return;
+      }
+      PC.set({});
+      renderConns();
+      toast(name + ' account removed.');
+    }
+  });
+  const added = new URLSearchParams(location.search).get('added');
+  if (added) toast(INFO[added][0] + ' account connected.');
+
+  // Switches
+  document.querySelectorAll('[data-key]').forEach(i => {
+    const k = i.dataset.key;
+    i.checked = !!st.settings[k];
+    if (i.hasAttribute('data-pro') && !pro) { i.disabled = true; i.checked = false; }
+    i.addEventListener('change', () => {
+      PC.set({ settings: { ...st.settings, [k]: i.checked } });
+      const label = i.getAttribute('aria-label').replace(' (Pro)', '');
+      toast(`${label}: ${i.checked ? 'on' : 'off'}.`);
+    });
+  });
+  if (pro) document.querySelectorAll('#checks .pill.pro').forEach(p => p.remove());
+
+  // Plan
+  if (pro) {
+    $('planTxt').innerHTML = `You're on <b>Pro</b> (${st.billing === 'm' ? 'monthly' : 'yearly'}). Renews ${esc(st.renews)}.`;
+    $('planBtns').innerHTML = '<button class="btn btn-ghost btn-sm" id="cancelPro">Cancel Pro</button>';
+    $('cancelPro').addEventListener('click', async () => {
+      const ok = await confirmBox({ title: 'Cancel Pro?', body: `You'll go back to the Free plan. Automatic checks and alerts stop, and only one account stays connected. You're within the 7-day refund window, so you'll get a full refund.`, ok: 'Cancel Pro', danger: true });
+      if (!ok) return;
+      const s = { ...st.settings, weekly: false, alerts: false };
+      // Free keeps only the signed-in account.
+      const conns = { google: null, microsoft: null }; conns[st.session] = st.email;
+      PC.set({ plan: 'free', billing: null, renews: null, settings: s, conns, extra: [] });
+      toast('Pro cancelled. Refund on its way.');
+      setTimeout(() => location.reload(), 900);
+    });
+  }
+
+  // Your data: download a real file of what's saved.
+  $('dl').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify({ exported: new Date().toISOString(), note: 'Privacy Checkup prototype data', ...PC.get() }, null, 2)], { type: 'application/json' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'privacy-checkup-my-data.json' });
+    a.click(); URL.revokeObjectURL(a.href);
+    toast('Your data file has been downloaded.');
+  });
+
+  $('del').addEventListener('click', async () => {
+    const ok = await confirmBox({ title: 'Delete your account?', body: 'This removes access to every connected account and permanently deletes your profile and saved results. This cannot be undone.', ok: 'Delete permanently', danger: true });
+    if (ok) { PC.reset(); location.href = 'connect.html?deleted=1'; }
+  });
+
+  // Highlight the current section in the side menu
+  const links = [...document.querySelectorAll('aside nav a')];
+  const io = new IntersectionObserver(es => es.forEach(en => {
+    if (en.isIntersecting) links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + en.target.id));
+  }), { rootMargin: '-30% 0px -60% 0px' });
+  document.querySelectorAll('section.block').forEach(s => io.observe(s));
+</script>
+</body>
+</html>

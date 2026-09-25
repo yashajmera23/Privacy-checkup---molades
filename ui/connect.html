@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Checkup</title>
+<script src="state.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;450;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="home.css">
+<style>
+  :root {
+    --bg: #000000;
+    --surface: #0a0a0a;
+    --surface-2: #141414;
+    --line: #1f1f1f;
+    --line-strong: #333333;
+    --text: #ededed;
+    --text-2: #a1a1a1;
+    --text-3: #707070;
+    --ok: #45a557;
+    --no: #8f8f8f;
+    --sans: 'Geist', ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: 'Geist Mono', ui-monospace, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  /* Nav */
+  nav { height: 64px; display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 14px; }
+  .mark { width: 18px; height: 18px; border: 1.5px solid var(--text); border-radius: 4px; position: relative; }
+  .mark::after { content: ""; position: absolute; inset: 4px; background: var(--text); border-radius: 1px; }
+  .nav-right { display: flex; gap: 8px; }
+
+  /* Buttons */
+  .btn { font: inherit; font-size: 14px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: background .15s, border-color .15s; }
+  .btn-primary { background: var(--text); color: #000000; border: 0; padding: 0 16px; height: 40px; font-weight: 500; }
+  .btn-primary:hover { background: #ffffff; }
+  .btn-ghost { background: transparent; color: var(--text-2); border: 1px solid var(--line-strong); padding: 0 14px; height: 40px; }
+  .btn-ghost:hover { color: var(--text); border-color: #4a4a4a; }
+  .btn-sm { height: 30px; padding: 0 12px; font-size: 13px; }
+  .btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+  /* Hero */
+  .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; padding: 88px 0 96px; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .071em; text-transform: uppercase; color: var(--text-3); margin-bottom: 16px; }
+  h1 { font-size: 52px; font-weight: 450; letter-spacing: -0.05em; line-height: 1.02; margin-bottom: 20px; }
+  .lede { color: var(--text-2); font-size: 16px; max-width: 440px; margin-bottom: 32px; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .g { width: 16px; height: 16px; }
+  .fine { margin-top: 16px; font-family: var(--mono); font-size: 12px; color: var(--text-3); }
+
+  /* Panel */
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; position: relative; }
+
+  /* Futuristic frame: light sweeping around the edge, corner brackets, scan line */
+  @property --angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+  .frame { position: relative; }
+  .frame::before {
+    content: ""; position: absolute; inset: -1px; border-radius: 9px; padding: 1px; z-index: 1; pointer-events: none;
+    background: conic-gradient(from var(--angle), transparent 0deg, transparent 280deg, rgba(255,255,255,.15) 320deg, #ffffff 350deg, transparent 360deg);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    animation: sweep 6s linear infinite;
+  }
+  @keyframes sweep { to { --angle: 360deg; } }
+  .corner { position: absolute; width: 14px; height: 14px; border-color: var(--text); border-style: solid; border-width: 0; z-index: 2; pointer-events: none; animation: blink 3s ease-in-out infinite; }
+  .corner.tl { top: -8px; left: -8px; border-top-width: 1px; border-left-width: 1px; }
+  .corner.tr { top: -8px; right: -8px; border-top-width: 1px; border-right-width: 1px; animation-delay: .75s; }
+  .corner.br { bottom: -8px; right: -8px; border-bottom-width: 1px; border-right-width: 1px; animation-delay: 1.5s; }
+  .corner.bl { bottom: -8px; left: -8px; border-bottom-width: 1px; border-left-width: 1px; animation-delay: 2.25s; }
+  @keyframes blink { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+  .scan { position: absolute; left: 0; right: 0; top: 0; height: 60px; pointer-events: none; z-index: 0;
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,.035) 80%, rgba(255,255,255,.12) 100%);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    animation: scan 4.5s cubic-bezier(.4,0,.2,1) infinite; }
+  @keyframes scan { 0% { transform: translateY(-60px); } 100% { transform: translateY(420px); } }
+  .pane, .tabs, .panel-foot { position: relative; z-index: 1; }
+  .dot { animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(69,165,87,.6); } 50% { box-shadow: 0 0 0 4px rgba(69,165,87,0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .frame::before, .corner, .scan, .dot { animation: none; }
+    .scan { display: none; }
+  }
+  .tabs { display: flex; border-bottom: 1px solid var(--line); }
+  .tab { flex: 1; background: none; border: 0; color: var(--text-3); font: inherit; font-size: 12px; padding: 12px 0; cursor: pointer; border-right: 1px solid var(--line); }
+  .tab:last-child { border-right: 0; }
+  .tab { display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .ti { width: 16px; height: 16px; opacity: .7; }
+  .tab[aria-selected="true"] .ti { opacity: 1; }
+  .tab[aria-selected="true"] { color: var(--text); background: var(--surface-2); }
+  .tab:hover { color: var(--text); }
+  .pane { padding: 24px; font-family: var(--mono); font-size: 13px; }
+  .pane h3 { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: .071em; text-transform: uppercase; color: var(--text-3); margin-bottom: 12px; }
+  .src { font-family: var(--sans); font-size: 13px; color: var(--text-2); padding-bottom: 16px; margin-bottom: 20px; border-bottom: 1px dashed var(--line); }
+  .pane ul { list-style: none; display: grid; gap: 10px; margin-bottom: 24px; }
+  .pane ul:last-child { margin-bottom: 0; }
+  .pane li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; color: var(--text); }
+  .pane li.never { color: var(--text-2); }
+  .yes { color: var(--ok); }
+  .x { color: var(--no); }
+  .panel-foot { border-top: 1px solid var(--line); padding: 12px 24px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-3); font-family: var(--mono); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+
+  /* Steps */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); padding: 40px 0 0; gap: 32px; }
+  .step .n { font-family: var(--mono); font-size: 11px; letter-spacing: .071em; color: var(--text-3); margin-bottom: 10px; }
+  .step p { color: var(--text); font-size: 14px; }
+  .step p span { color: var(--text-2); display: block; }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; gap: 40px; padding: 48px 0 64px; }
+    h1 { font-size: 38px; }
+    .steps { grid-template-columns: 1fr; gap: 24px; }
+    .nav-right .btn-ghost { display: none; }
+  }
+  .eye-hero { margin: 0; display: grid; place-items: center; }
+  .eye-hero img { width: 100%; max-width: 620px; height: auto; display: block; mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 60%, transparent 100%); -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 60%, transparent 100%); }
+  .look { max-width: 640px; margin: 0 auto 96px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="topbar" id="topbar">
+      <a class="brand" href="connect.html"><span class="mark" aria-hidden="true"></span>Privacy Checkup</a>
+      <div class="nav-links">
+        <a href="#numbers">Why it matters</a>
+        <a href="#story">How leaks happen</a>
+        <a href="#compare">Compare</a>
+        <a href="pricing.html">Pricing</a>
+      </div>
+      <div class="nav-right">
+        <a class="btn btn-ghost btn-sm pill" href="google.html" id="navLogin">Log in</a>
+        <a class="btn btn-primary btn-sm pill" href="#start" id="navStart">Start free check <span aria-hidden="true">↗</span></a>
+      </div>
+    </nav>
+
+    <main class="eye-stage" id="eyeStage">
+      <div class="eye-sticky">
+        <h1 class="split"><span class="w w-left"><span id="wLeft">Your accounts</span></span><span class="w w-right"><span id="wRight">are leaking.</span></span></h1>
+        <div class="exposures" id="exposures" aria-live="polite">
+          <div class="xp xp-1" data-show=".12" data-fix=".42" data-doing="switch the link to private"><span class="xp-dot"></span><div><b>Your passport photo</b><span class="xp-s" data-open="Anyone with the link can open it" data-closed="Fixed. Now only you can open it">Anyone with the link can open it</span></div></div>
+          <div class="xp xp-2" data-show=".2" data-fix=".58" data-doing="set a new password"><span class="xp-dot"></span><div><b>Your password</b><span class="xp-s" data-open="Leaked online after a shop got hacked" data-closed="Fixed. The leaked one no longer works">Leaked online after a shop got hacked</span></div></div>
+          <div class="xp xp-3" data-show=".28" data-fix=".74" data-doing="sign that laptop out"><span class="xp-dot"></span><div><b>A stranger signed in to your email</b><span class="xp-s" data-open="From a laptop you don’t own" data-closed="Fixed. They’ve been logged out">From a laptop you don’t own</span></div></div>
+        </div>
+        <div class="eye-wrap">
+          <div class="eye-glow" aria-hidden="true"></div>
+          <canvas id="orb" role="img" aria-label="An abstract sphere of light. It leaks while your accounts are exposed and settles as each problem is fixed."></canvas>
+          <p class="eye-caption" aria-live="polite"><span class="cap-dot" aria-hidden="true"></span><span id="eyeCap">Leaking right now</span><span class="cap-count" id="capCount"></span></p>
+        </div>
+        <section class="hero-copy">
+        <p class="hero-sub"><span class="hs-main" id="heroMain">Most people have something exposed and don’t know it.</span><span class="hs-sub" id="heroSub">A file shared too widely, a leaked password, a warning email you never opened.</span></p>
+      </section>
+      </div>
+    </main>
+
+    <section class="your-turn" id="start" aria-labelledby="startTitle">
+      <p class="eyebrow">Your turn</p>
+      <h2 id="startTitle">Now do it for your own accounts.</h2>
+      <p class="lede">One free check looks at your files, your security emails and known leaks, then shows only what needs fixing.</p>
+      <div class="actions" id="connect">
+        <button class="btn btn-primary" type="button" onclick="location.href='google.html'">
+          <svg class="g" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.35 11.1H12v2.9h5.35c-.5 2.4-2.6 3.9-5.35 3.9a6 6 0 1 1 0-12c1.5 0 2.85.55 3.9 1.45l2.15-2.15A9 9 0 1 0 21 12c0-.3 0-.6-.05-.9h.4z"/></svg>
+          Connect Google account
+        </button>
+        <button class="btn btn-ghost" type="button" onclick="location.href='microsoft.html'">
+          <svg class="g" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 3h8.5v8.5H3zM12.5 3H21v8.5h-8.5zM3 12.5h8.5V21H3zM12.5 12.5H21V21h-8.5z"/></svg>
+          Microsoft account
+        </button>
+      </div>
+      <p class="fine" id="fineTxt">We only read. We never change, delete, or share anything.</p>
+    </section>
+
+    <section class="look" id="what" aria-label="What the check looks at">
+      <div class="frame">
+      <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span>
+      <span class="corner br" aria-hidden="true"></span><span class="corner bl" aria-hidden="true"></span>
+      <section class="panel" aria-label="What the check looks at">
+        <div class="scan" aria-hidden="true"></div>
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" aria-selected="true" data-tab="drive">
+            <svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 3h7l6 10.5-3.5 6H6l-3.5-6z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8.5 3l6 10.5H21M15.5 3L9.3 13.5 6 19.5M2.5 13.5h12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            Files</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="gmail">
+            <svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 6.5l9 7 9-7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            Email</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="leaks">
+            <svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l7.5 3v5.7c0 4.6-3.2 8.3-7.5 9.7-4.3-1.4-7.5-5.1-7.5-9.7V5.8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 8v4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="15.6" r="1" fill="currentColor"/></svg>
+            Email leaks</button>
+        </div>
+
+        <div class="pane" data-pane="drive">
+          <p class="src">Google Drive · OneDrive</p>
+          <h3>We look at</h3>
+          <ul>
+            <li><span class="yes">✓</span>Which files are open to anyone with the link</li>
+            <li><span class="yes">✓</span>Which files are shared with people outside you</li>
+            <li><span class="yes">✓</span>File names and who can see them</li>
+          </ul>
+          <h3>We never</h3>
+          <ul>
+            <li class="never"><span class="x">✕</span>Open or read what's inside your files</li>
+            <li class="never"><span class="x">✕</span>Change who a file is shared with</li>
+          </ul>
+        </div>
+
+        <div class="pane" data-pane="gmail" hidden>
+          <p class="src">Gmail · Outlook</p>
+          <h3>We look at</h3>
+          <ul>
+            <li><span class="yes">✓</span>"New sign-in" and security alert emails</li>
+            <li><span class="yes">✓</span>"Your password was changed" emails</li>
+            <li><span class="yes">✓</span>Leak warning emails from other companies</li>
+          </ul>
+          <h3>We never</h3>
+          <ul>
+            <li class="never"><span class="x">✕</span>Read your personal conversations</li>
+            <li class="never"><span class="x">✕</span>Send, delete, or keep any email</li>
+          </ul>
+        </div>
+
+        <div class="pane" data-pane="leaks" hidden>
+          <p class="src">Any email address you own</p>
+          <h3>We look at</h3>
+          <ul>
+            <li><span class="yes">✓</span>Whether your email is in a known leak</li>
+            <li><span class="yes">✓</span>Which company leaked it, and when</li>
+            <li><span class="yes">✓</span>What else leaked with it (password, phone…)</li>
+          </ul>
+          <h3>We never</h3>
+          <ul>
+            <li class="never"><span class="x">✕</span>Ask for your password</li>
+            <li class="never"><span class="x">✕</span>Check anyone's email but your own</li>
+          </ul>
+        </div>
+
+        <div class="panel-foot"><span class="dot" aria-hidden="true"></span>Nothing is saved after you see your results</div>
+      </section>
+      </div>
+    </section>
+
+    <section class="steps" aria-label="How it works">
+      <div class="step"><div class="n">01 — CONNECT</div><p>Connect Google or Microsoft.<span>Read-only. You can remove access any time.</span></p></div>
+      <div class="step"><div class="n">02 — ONE CLICK</div><p>Press start. That's it.<span>All three checks run at once.</span></p></div>
+      <div class="step"><div class="n">03 — ONLY PROBLEMS</div><p>See what's exposed.<span>Each one comes with a fix and a tip for next time.</span></p></div>
+    </section>
+
+    <!-- ============ The numbers ============ -->
+    <section class="sec" id="numbers" aria-labelledby="numbersTitle">
+      <div class="sec-head">
+        <p class="eyebrow">Why this matters</p>
+        <h2 id="numbersTitle">Leaks aren't rare. They're routine.</h2>
+        <p>These are real numbers from the people who track them. Most of it is preventable with a few simple habits.</p>
+      </div>
+      <div class="stats">
+        <article class="stat">
+          <p class="idx">01 · LEAKED ACCOUNTS</p>
+          <div class="num" data-to="17.8" data-dec="1" data-suffix="B">0</div>
+          <div class="bar"><i data-w="100"></i></div>
+          <p class="what">email accounts have turned up in known data leaks so far.</p>
+          <p class="source">Source: <a href="https://haveibeenpwned.com/" target="_blank" rel="noopener">Have I Been Pwned</a>, live count, Sep 2026</p>
+        </article>
+        <article class="stat">
+          <p class="idx">02 · REUSED PASSWORDS</p>
+          <div class="num" data-to="2" data-dec="0" data-prefix="" data-after=" in 3">0</div>
+          <div class="bar"><i data-w="66"></i></div>
+          <p class="what">people use the same password on more than one account.</p>
+          <p class="source">Source: <a href="https://www.infosecurity-magazine.com/news/google-survey-finds-two-users/" target="_blank" rel="noopener">Google / Harris Poll</a>, 3,000 people, 2019</p>
+        </article>
+        <article class="stat">
+          <p class="idx">03 · HOW BREAKS BEGIN</p>
+          <div class="num" data-to="22" data-dec="0" data-suffix="%">0</div>
+          <div class="bar"><i data-w="22"></i></div>
+          <p class="what">of data breaches start with a stolen login. It's the most common way in.</p>
+          <p class="source">Source: <a href="https://www.verizon.com/business/resources/reports/2025-dbir-data-breach-investigations-report.pdf" target="_blank" rel="noopener">Verizon DBIR</a>, 2025</p>
+        </article>
+        <article class="stat">
+          <p class="idx">04 · MONEY LOST</p>
+          <div class="num" data-to="16.6" data-dec="1" data-prefix="$" data-suffix="B">0</div>
+          <div class="bar"><i data-w="100"></i></div>
+          <p class="what">lost to online crime reported to the FBI in 2024 alone, up 33% in a year.</p>
+          <p class="source">Source: <a href="https://www.ic3.gov/AnnualReport/Reports/2024_IC3Report.pdf" target="_blank" rel="noopener">FBI IC3 report</a>, 2024</p>
+        </article>
+      </div>
+      <p class="reassure"><span class="dot" aria-hidden="true"></span><span><b>The good news:</b> you don't need to be an expert. Knowing what's exposed, and fixing a few things, stops most of this.</span></p>
+    </section>
+
+    <!-- ============ What happens next ============ -->
+    <section class="sec" id="story" aria-labelledby="storyTitle">
+      <div class="sec-head">
+        <p class="eyebrow">What happens after a leak</p>
+        <h2 id="storyTitle">How one leak turns into a stolen account.</h2>
+        <p>Scroll or click through the five steps. Then switch on Privacy Checkup to see where the chain breaks.</p>
+      </div>
+
+      <div class="story" id="storyBox">
+        <div class="story-steps">
+          <span class="rail" aria-hidden="true"><i id="railFill"></i></span>
+          <ol id="storySteps" style="list-style:none"></ol>
+        </div>
+
+        <div class="story-view">
+          <div class="guard">
+            <span id="guardTxt"><b>Without</b> Privacy Checkup</span>
+            <button class="tgl" id="guardTgl" role="switch" aria-checked="false" aria-label="Show with Privacy Checkup"></button>
+          </div>
+          <div class="screen" aria-live="polite">
+            <div class="screen-top"><i></i><i></i><i></i><span id="sceneLabel">step 1 of 5</span></div>
+            <div id="scenes"></div>
+            <div class="shield" id="shield"><div class="shield-box">
+              <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l7.5 3v5.7c0 4.6-3.2 8.3-7.5 9.7-4.3-1.4-7.5-5.1-7.5-9.7V5.8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <b id="shieldTitle">Stopped</b><p id="shieldBody"></p>
+            </div></div>
+          </div>
+          <div class="nav-steps">
+            <div class="dots" id="storyDots" role="group" aria-label="Choose a step"></div>
+            <div class="arrows"><button type="button" id="prevStep" aria-label="Previous step">←</button><button type="button" id="nextStep" aria-label="Next step">→</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Comparison ============ -->
+    <section class="sec" id="compare" aria-labelledby="compareTitle">
+      <div class="sec-head">
+        <p class="eyebrow">Why not just use Google's check?</p>
+        <h2 id="compareTitle">Good tools exist. They each see one piece.</h2>
+        <p>Google's Security Checkup and Have I Been Pwned are free and worth using. Here's what each one covers, and what we add.</p>
+      </div>
+      <div class="compare-wrap">
+        <table class="cmp">
+          <thead>
+            <tr>
+              <th scope="col"><span class="eyebrow" style="margin:0">What it checks</span></th>
+              <th scope="col">Google Security Checkup<small>Free · Google only</small></th>
+              <th scope="col">Have I Been Pwned<small>Free · any email</small></th>
+              <th scope="col" class="us">Privacy Checkup<small>Free check · Pro ₹999/yr</small></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Files anyone can open<small>Drive or OneDrive files shared with "anyone with the link"</small></td><td><span class="n">–</span></td><td><span class="n">–</span></td><td class="us"><span class="y">✓</span></td></tr>
+            <tr><td>Files shared with outsiders<small>People outside you who can still see your files</small></td><td><span class="n">–</span></td><td><span class="n">–</span></td><td class="us"><span class="y">✓</span></td></tr>
+            <tr><td>Your email in known leaks<small>Which company leaked it, and what else leaked with it</small></td><td><span class="part">Partly</span><small style="display:block">Saved passwords only</small></td><td><span class="y">✓</span></td><td class="us"><span class="y">✓</span></td></tr>
+            <tr><td>Missed warning emails from other companies<small>"Your password was changed", leak notices from shops and apps</small></td><td><span class="n">–</span></td><td><span class="n">–</span></td><td class="us"><span class="y">✓</span></td></tr>
+            <tr><td>New sign-ins and devices<small>Someone logged in from somewhere new</small></td><td><span class="y">✓</span></td><td><span class="n">–</span></td><td class="us"><span class="y">✓</span></td></tr>
+            <tr><td>Works with Microsoft accounts<small>Outlook, Hotmail, OneDrive</small></td><td><span class="n">–</span></td><td><span class="y">✓</span></td><td class="us"><span class="y">✓</span></td></tr>
+            <tr><td>Plain steps to fix it, and to avoid it next time</td><td><span class="part">Partly</span></td><td><span class="n">–</span></td><td class="us"><span class="y">✓</span></td></tr>
+            <tr><td>All of it in one check</td><td><span class="n">–</span></td><td><span class="n">–</span></td><td class="us"><span class="y">✓</span></td></tr>
+          </tbody>
+        </table>
+        <p class="cmp-note">Based on each tool's public features as of September 2026. Google closed its separate "Dark Web Report" leak alerts in February 2026 (<a href="https://thehackernews.com/2025/12/google-to-shut-down-dark-web-monitoring.html" target="_blank" rel="noopener">source</a>); its Password Checkup still checks passwords saved in Google Password Manager. We use leak data like Have I Been Pwned's for our own leak check.</p>
+        <div class="cmp-cta">
+          <button class="btn btn-primary" type="button" onclick="location.href='google.html'">Run my free check</button>
+          <a class="btn btn-ghost" href="pricing.html">Compare plans</a>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+<div class="demo-bar" aria-label="Demo screens">
+  <a href="connect.html" aria-current="page">1 Welcome</a><a href="ready.html">2 Start</a><a href="scanning.html">3 Checking</a><a href="results.html">4 Problems</a><a href="clear.html">5 All clear</a><a href="pricing.html">Pricing</a><a href="account.html">Account</a>
+</div>
+
+<script>
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x === t));
+    document.querySelectorAll('.pane').forEach(p => p.hidden = p.dataset.pane !== t.dataset.tab);
+  }));
+</script>
+<script src="shared.js"></script>
+<script src="home.js"></script>
+<script src="eye.js"></script>
+<script>
+  // Already signed in: offer to carry on instead of signing in again.
+  const st = PC.get();
+  if (st.session) {
+    const nav = document.getElementById("navStart");
+    nav.textContent = "Go to my check"; nav.href = st.checked ? "results.html" : "ready.html";
+    document.getElementById("navLogin").hidden = true;
+    document.getElementById("fineTxt").innerHTML = "Signed in as <b></b>. <a href=\"#\" id=\"lo\">Log out</a>";
+    document.querySelector("#fineTxt b").textContent = st.email;
+    document.getElementById("lo").addEventListener("click", e => { e.preventDefault(); logout(); });
+  }
+</script>
+</body>
+</html>

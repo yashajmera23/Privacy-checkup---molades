@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Checkup · Checking</title>
+<script src="state.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;450;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  main { display: grid; grid-template-columns: 1fr 1.1fr; gap: 56px; align-items: start; padding: 72px 0 120px; }
+  .pct { font-family: var(--mono); font-size: 64px; font-weight: 400; letter-spacing: -0.04em; line-height: 1; margin: 32px 0 8px; }
+  .pct-label { font-family: var(--mono); font-size: 12px; color: var(--text-3); }
+  .row { padding: 18px 20px; border-bottom: 1px solid var(--line); position: relative; z-index: 1; }
+  .row-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .row-head strong { font-weight: 500; display: flex; align-items: center; gap: 10px; }
+  .state { font-family: var(--mono); font-size: 11px; letter-spacing: .071em; text-transform: uppercase; color: var(--text-3); }
+  .state.done { color: var(--ok); }
+  .bar { height: 2px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--text); transition: width .3s linear; }
+  .count { font-family: var(--mono); font-size: 12px; color: var(--text-3); margin-top: 8px; }
+  .log { padding: 16px 20px; font-family: var(--mono); font-size: 12px; color: var(--text-3); height: 168px; overflow: hidden; position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: flex-end; }
+  .log p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log p b { color: var(--text); font-weight: 400; }
+  .log p .hit { color: var(--danger); }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; gap: 32px; padding-top: 40px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="connect.html"><span class="mark" aria-hidden="true"></span>Privacy Checkup</a>
+    <div class="account"><span class="avatar">A</span>aarav@gmail.com</div>
+  </nav>
+
+  <main>
+    <section>
+      <p class="eyebrow">Step 3 of 3 · Checking</p>
+      <h1>Looking for anything exposed…</h1>
+      <p class="lede">Hang tight. We're only reading. Nothing in your account is being changed.</p>
+      <div class="pct" id="pct" aria-live="polite">0%</div>
+      <div class="pct-label" id="found">0 problems found so far</div>
+    </section>
+
+    <div class="frame fast">
+      <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span>
+      <span class="corner br" aria-hidden="true"></span><span class="corner bl" aria-hidden="true"></span>
+      <section class="panel" aria-label="Check progress">
+        <div class="scan" aria-hidden="true"></div>
+        <div class="row">
+          <div class="row-head"><strong>Files</strong><span class="state" id="s0">Checking</span></div>
+          <div class="bar"><i id="b0"></i></div><div class="count" id="c0">0 of 214 files</div>
+        </div>
+        <div class="row">
+          <div class="row-head"><strong>Email</strong><span class="state" id="s1">Checking</span></div>
+          <div class="bar"><i id="b1"></i></div><div class="count" id="c1">0 security emails reviewed</div>
+        </div>
+        <div class="row">
+          <div class="row-head"><strong>Email leaks</strong><span class="state" id="s2">Checking</span></div>
+          <div class="bar"><i id="b2"></i></div><div class="count" id="c2">Searching known leaks</div>
+        </div>
+        <div class="log" id="log" aria-hidden="true"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="demo-bar" aria-label="Demo screens">
+  <a href="connect.html">1 Welcome</a><a href="ready.html">2 Start</a><a href="scanning.html" aria-current="page">3 Checking</a><a href="results.html">4 Problems</a><a href="clear.html">5 All clear</a><a href="pricing.html">Pricing</a><a href="account.html">Account</a>
+</div>
+
+<script>
+  // Demo only: fake progress, then go to the results screen.
+  const st = PC.get(), L = PC.labels(), T = PC.totals();
+  const on = [st.settings.files, st.settings.email, st.settings.leaks];
+  const lines = [
+    ['Files', `Reading ${L.files} sharing settings…`],
+    ['Leaks', 'Searching 900+ known leaks'],
+    ['Email', `Looking for "new sign-in" alerts in ${L.mail}`],
+    ['Files', '<b>Trip-Passport-Scan.pdf</b> <span class="hit">open to anyone with link</span>'],
+    ['Email', 'Looking for password-change emails'],
+    ['Leaks', `<b>${st.email}</b> <span class="hit">found in 2 leaks</span>`],
+    ['Files', '<b>Salary-Slips-2025</b> <span class="hit">shared outside</span>'],
+    ['Email', '<b>Unrecognized sign-in, Oct 2</b> <span class="hit">flagged</span>'],
+    ['Files', `Checked ${T.files} of ${T.files} files`],
+    ['Email', `Reviewed ${T.emails} security emails`],
+  ].filter(([tag]) => on[['Files', 'Email', 'Leaks'].indexOf(tag)]);
+  lines.push(['Done', 'All checks complete']);
+  const speeds = [1.1, 0.9, 1.6];
+  // Checks switched off in settings start at 100% and say so.
+  let p = on.map(x => x ? 0 : 100), found = 0, li = 0, t = 0;
+  on.forEach((x, i) => { if (!x) { document.getElementById('s' + i).textContent = 'Off'; document.getElementById('c' + i).textContent = 'Turned off in settings'; document.getElementById('b' + i).parentElement.parentElement.style.opacity = .45; } });
+  const log = document.getElementById('log');
+  const tick = setInterval(() => {
+    t++;
+    for (let i = 0; i < 3; i++) {
+      if (!on[i]) continue;
+      p[i] = Math.min(100, p[i] + speeds[i] * (2 + Math.random() * 2));
+      document.getElementById('b' + i).style.width = p[i] + '%';
+      if (p[i] >= 100) { const s = document.getElementById('s' + i); s.textContent = 'Done'; s.classList.add('done'); }
+    }
+    if (on[0]) document.getElementById('c0').textContent = Math.round(p[0] / 100 * T.files) + ' of ' + T.files + ' files';
+    if (on[1]) document.getElementById('c1').textContent = Math.round(p[1] / 100 * T.emails) + ' security emails reviewed';
+    if (on[2] && p[2] >= 100) document.getElementById('c2').textContent = 'Checked against 900+ known leaks';
+    const avg = Math.round((p[0] + p[1] + p[2]) / 3);
+    document.getElementById('pct').textContent = avg + '%';
+    if (t % 4 === 0 && li < lines.length) {
+      const [tag, text] = lines[li++];
+      if (text.includes('hit')) found++;
+      document.getElementById('found').textContent = found + (found === 1 ? ' problem' : ' problems') + ' found so far';
+      const el = document.createElement('p');
+      el.innerHTML = '▸ [' + tag + '] ' + text;
+      log.appendChild(el);
+      while (log.children.length > 7) log.firstChild.remove();
+    }
+    if (avg >= 100 && li >= lines.length) {
+      clearInterval(tick);
+      PC.set({ checked: true });
+      const open = PC.problems().filter(x => !PC.fixed().includes(x.id)).length;
+      setTimeout(() => location.href = open ? 'results.html' : 'clear.html', 900);
+    }
+  }, 120);
+</script>
+<script src="shared.js"></script>
+</body>
+</html>

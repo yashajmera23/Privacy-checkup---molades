@@ -1,0 +1,11 @@
+# Unused 3D experiment (35 MB)
+*.glb
+# Look-alike Google/Microsoft sign-in screens: local demo only, never published.
+# They will be replaced by real "Sign in with Google/Microsoft".
+ui/google.html
+ui/microsoft.html
+node_modules/
+.env
+.env.*
+.DS_Store
+Thumbs.db

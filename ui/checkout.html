@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Checkup · Checkout</title>
+<script src="state.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;450;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<!-- PROTOTYPE: nothing entered here is stored, sent, or charged. Real checkout would use a payment provider's hosted form. -->
+<style>
+  .proto-note { margin-top: 24px; border: 1px dashed var(--warn); color: var(--warn); background: var(--warn-bg); border-radius: 6px; padding: 10px 14px; font-size: 13px; }
+  .steps-top { display: flex; gap: 8px; align-items: center; font-family: var(--mono); font-size: 11px; letter-spacing: .071em; text-transform: uppercase; color: var(--text-3); margin: 32px 0 20px; }
+  .steps-top b { color: var(--text); font-weight: 400; }
+  .grid { display: grid; grid-template-columns: 1fr 400px; gap: 48px; align-items: start; padding-bottom: 40px; }
+  h1 { font-size: 40px; margin-bottom: 28px; }
+  .box { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; margin-bottom: 20px; }
+  .box-head { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+  .box-head h2 { font-size: 16px; font-weight: 500; letter-spacing: -0.01em; }
+  .box-head .num { font-family: var(--mono); font-size: 11px; color: var(--text-3); margin-right: 10px; }
+  .box-body { padding: 20px; }
+
+  .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .opt { border: 1px solid var(--line-strong); border-radius: 8px; padding: 14px 16px; cursor: pointer; display: grid; grid-template-columns: 18px 1fr; gap: 12px; align-items: start; position: relative; }
+  .opt:hover { border-color: #4a4a4a; }
+  .opt input { position: absolute; opacity: 0; }
+  .opt .radio { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--text-3); margin-top: 2px; display: grid; place-items: center; }
+  .opt input:checked ~ .radio { border-color: var(--text); }
+  .opt input:checked ~ .radio::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--text); }
+  .opt:has(input:checked) { border-color: var(--text); background: var(--surface-2); }
+  .opt:has(input:focus-visible) { outline: 2px solid var(--text); outline-offset: 2px; }
+  .opt strong { font-weight: 500; display: block; }
+  .opt small { color: var(--text-3); font-size: 13px; }
+  .opt .save { position: absolute; top: -9px; right: 12px; font-family: var(--mono); font-size: 10px; letter-spacing: .05em; background: var(--ok); color: #000; border-radius: 999px; padding: 2px 8px; }
+
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .fields .full { grid-column: 1 / -1; }
+  label.f { display: grid; gap: 6px; font-size: 13px; color: var(--text-2); }
+  label.f small { color: var(--text-3); }
+  input.in, select.in { height: 40px; background: var(--bg); border: 1px solid var(--line-strong); border-radius: 6px; color: var(--text); font: inherit; font-size: 14px; padding: 0 12px; width: 100%; }
+  input.in:focus, select.in:focus { outline: none; border-color: var(--text-2); box-shadow: 0 0 0 3px rgba(255,255,255,.08); }
+  input.in.mono { font-family: var(--mono); letter-spacing: .04em; }
+  input.in[aria-invalid="true"] { border-color: var(--danger); }
+  .err { color: var(--danger); font-size: 12px; min-height: 0; }
+
+  .tabs { display: flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
+  .tabs button { flex: 1; background: none; border: 0; border-right: 1px solid var(--line-strong); color: var(--text-3); font: inherit; font-size: 13px; padding: 12px 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .tabs button:last-child { border-right: 0; }
+  .tabs button[aria-selected="true"] { background: var(--surface-2); color: var(--text); }
+  .tabs svg { width: 20px; height: 20px; }
+  .apps { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .app { border: 1px solid var(--line-strong); border-radius: 999px; padding: 6px 12px; font-size: 12px; color: var(--text-2); background: none; cursor: pointer; font-family: inherit; }
+  .app[aria-pressed="true"] { border-color: var(--text); color: var(--text); }
+  .or { display: flex; align-items: center; gap: 12px; color: var(--text-3); font-family: var(--mono); font-size: 11px; margin: 18px 0; }
+  .or::before, .or::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+  .qr { display: grid; grid-template-columns: 96px 1fr; gap: 16px; align-items: center; }
+  .qr-img { width: 96px; height: 96px; background: #fff; border-radius: 6px; padding: 8px; }
+  .qr-img svg { width: 100%; height: 100%; }
+  .qr p { color: var(--text-2); font-size: 13px; }
+  .banks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--text-2); margin-top: 4px; }
+  .check input { margin-top: 3px; accent-color: #ededed; }
+  .check a { color: var(--text); }
+
+  /* Summary */
+  aside.summary { position: sticky; top: 24px; }
+  .sum-plan { display: flex; gap: 14px; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+  .sum-plan .mk { width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--line-strong); display: grid; place-items: center; }
+  .sum-plan .mk span { width: 14px; height: 14px; border: 1.5px solid var(--text); border-radius: 3px; position: relative; }
+  .sum-plan .mk span::after { content: ""; position: absolute; inset: 3px; background: var(--text); }
+  .sum-plan strong { font-weight: 500; display: block; }
+  .sum-plan small { color: var(--text-3); font-family: var(--mono); font-size: 12px; }
+  .line { display: flex; justify-content: space-between; padding: 6px 0; color: var(--text-2); font-size: 14px; }
+  .line span:last-child { font-family: var(--mono); }
+  .line.disc span:last-child { color: var(--ok); }
+  .line.total { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 14px; color: var(--text); font-size: 16px; }
+  .line.total span:last-child { font-size: 20px; }
+  .promo { display: flex; gap: 8px; margin: 14px 0 6px; }
+  .promo input { flex: 1; }
+  .promo-msg { font-size: 12px; color: var(--text-3); min-height: 18px; }
+  .promo-msg.ok { color: var(--ok); }
+  .promo-msg.bad { color: var(--danger); }
+  .pay { width: 100%; height: 48px; font-size: 15px; margin-top: 16px; }
+  .pay[disabled] { opacity: .5; cursor: not-allowed; }
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,.2); border-top-color: #000; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .trust { list-style: none; display: grid; gap: 8px; margin-top: 18px; font-size: 12px; color: var(--text-3); }
+  .trust li { display: grid; grid-template-columns: 18px 1fr; }
+  .trust li::before { content: "✓"; color: var(--ok); }
+  .renew { font-size: 12px; color: var(--text-3); margin-top: 12px; line-height: 1.5; }
+
+  /* Success */
+  .success { display: none; text-align: center; padding: 80px 0 40px; }
+  .success.on { display: grid; place-items: center; }
+  .seal { width: 88px; height: 88px; border-radius: 50%; border: 1px solid rgba(69,165,87,.4); display: grid; place-items: center; color: var(--ok); margin-bottom: 28px; position: relative; }
+  .seal::before, .seal::after { content: ""; position: absolute; inset: -1px; border-radius: 50%; border: 1px solid var(--ok); animation: ring 2.8s ease-out infinite; }
+  .seal::after { animation-delay: 1.4s; }
+  @keyframes ring { from { transform: scale(1); opacity: .6; } to { transform: scale(1.8); opacity: 0; } }
+  .receipt { width: 100%; max-width: 440px; margin: 32px 0; text-align: left; }
+  .receipt .line span:first-child { color: var(--text-3); }
+  .receipt .line span:last-child { color: var(--text); }
+  .success .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  [hidden] { display: none !important; }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    aside.summary { position: static; }
+    .fields, .plans { grid-template-columns: 1fr; }
+    .banks { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="connect.html"><span class="mark" aria-hidden="true"></span>Privacy Checkup</a>
+    <div class="account"><span class="avatar">A</span>aarav@gmail.com</div>
+  </nav>
+
+  <div class="proto-note">Prototype checkout. Nothing you type here is saved, sent, or charged. Don't enter real card details.</div>
+
+  <div id="checkout">
+    <div class="steps-top"><a href="pricing.html" style="text-decoration:none">Plans</a> <span>›</span> <b>Checkout</b> <span>›</span> <span>Done</span></div>
+    <div class="grid">
+      <form id="form" novalidate>
+        <h1>Upgrade to Pro</h1>
+
+        <section class="box">
+          <div class="box-head"><h2><span class="num">01</span>Choose billing</h2></div>
+          <div class="box-body plans">
+            <label class="opt"><input type="radio" name="bill" value="y" checked><span class="radio"></span><span class="save">SAVE 44%</span>
+              <span><strong>Yearly · ₹999</strong><small>₹83 a month, billed once a year</small></span></label>
+            <label class="opt"><input type="radio" name="bill" value="m"><span class="radio"></span>
+              <span><strong>Monthly · ₹149</strong><small>Billed every month</small></span></label>
+          </div>
+        </section>
+
+        <section class="box">
+          <div class="box-head"><h2><span class="num">02</span>Billing details</h2></div>
+          <div class="box-body fields">
+            <label class="f">Full name<input class="in" id="bname" autocomplete="name" required></label>
+            <label class="f">Email for invoice<input class="in" id="bemail" type="email" autocomplete="email" required></label>
+            <label class="f">State<select class="in" id="state">
+              <option>Maharashtra</option><option>Karnataka</option><option>Delhi</option><option>Tamil Nadu</option><option>Telangana</option><option>Gujarat</option><option>West Bengal</option><option>Uttar Pradesh</option><option>Other</option></select></label>
+            <label class="f">GSTIN <small>Optional, for business invoices</small><input class="in mono" id="gst" placeholder="27ABCDE1234F1Z5" maxlength="15"></label>
+          </div>
+        </section>
+
+        <section class="box">
+          <div class="box-head"><h2><span class="num">03</span>Payment method</h2></div>
+          <div class="box-body">
+            <div class="tabs" role="tablist">
+              <button type="button" role="tab" aria-selected="true" data-m="upi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3l5 9-5 9M13 3l5 9-5 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>UPI</button>
+              <button type="button" role="tab" aria-selected="false" data-m="card"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 10h19" stroke="currentColor" stroke-width="1.5"/></svg>Card</button>
+              <button type="button" role="tab" aria-selected="false" data-m="nb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-5 9 5M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Net banking</button>
+            </div>
+
+            <div data-pane="upi">
+              <label class="f">UPI ID<input class="in mono" id="upi" placeholder="yourname@okbank"></label>
+              <div class="err" id="upiErr"></div>
+              <div class="apps" aria-label="Or pay with an app">
+                <button type="button" class="app" aria-pressed="false">Google Pay</button>
+                <button type="button" class="app" aria-pressed="false">PhonePe</button>
+                <button type="button" class="app" aria-pressed="false">Paytm</button>
+                <button type="button" class="app" aria-pressed="false">BHIM</button>
+              </div>
+              <div class="or">OR SCAN</div>
+              <div class="qr">
+                <div class="qr-img" aria-hidden="true"><svg viewBox="0 0 21 21" shape-rendering="crispEdges"><path fill="#000" d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3zM0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2zM8 0h1v2H8zM10 1h2v1h-2zM9 3h2v2H9zM12 4h1v3h-1zM8 6h1v2H8zM10 8h3v1h-3zM0 8h2v1H0zM3 9h3v1H3zM14 8h2v2h-2zM17 9h4v1h-4zM8 10h2v2H8zM11 11h2v2h-2zM15 11h1v3h-1zM18 11h2v2h-2zM1 11h2v2H1zM4 12h3v1H4zM9 13h1v3H9zM12 14h2v1h-2zM17 14h1v2h-1zM19 15h2v2h-2zM8 17h3v1H8zM13 16h3v2h-3zM11 19h2v2h-2zM15 19h3v1h-3zM19 18h1v3h-1zM8 19h2v2H8z"/></svg></div>
+                <p>Scan with any UPI app to pay <b id="qrAmt">₹999</b>. The page will update once you've paid.</p>
+              </div>
+            </div>
+
+            <div data-pane="card" hidden>
+              <div class="fields">
+                <label class="f full">Card number<input class="in mono" id="cc" inputmode="numeric" placeholder="4111 1111 1111 1111" autocomplete="off" maxlength="19"></label>
+                <label class="f">Expiry<input class="in mono" id="exp" inputmode="numeric" placeholder="MM / YY" autocomplete="off" maxlength="7"></label>
+                <label class="f">CVV<input class="in mono" id="cvv" inputmode="numeric" placeholder="123" autocomplete="off" maxlength="4" type="password"></label>
+                <label class="f full">Name on card<input class="in" id="ccname" autocomplete="off"></label>
+              </div>
+              <div class="err" id="ccErr" style="margin-top:8px"></div>
+              <p style="color:var(--text-3);font-size:12px;margin-top:10px">Visa, Mastercard, RuPay, Amex. Your card may ask you to confirm with an OTP.</p>
+            </div>
+
+            <div data-pane="nb" hidden>
+              <div class="banks">
+                <label class="opt"><input type="radio" name="bank" checked><span class="radio"></span><span><strong>SBI</strong></span></label>
+                <label class="opt"><input type="radio" name="bank"><span class="radio"></span><span><strong>HDFC</strong></span></label>
+                <label class="opt"><input type="radio" name="bank"><span class="radio"></span><span><strong>ICICI</strong></span></label>
+                <label class="opt"><input type="radio" name="bank"><span class="radio"></span><span><strong>Axis</strong></span></label>
+                <label class="opt"><input type="radio" name="bank"><span class="radio"></span><span><strong>Kotak</strong></span></label>
+                <label class="opt"><input type="radio" name="bank"><span class="radio"></span><span><strong>Other</strong></span></label>
+              </div>
+              <p style="color:var(--text-3);font-size:13px">You'll be sent to your bank's page to finish paying.</p>
+            </div>
+          </div>
+        </section>
+
+        <label class="check"><input type="checkbox" id="agree"> <span>I agree to the <a href="terms.html" target="_blank">Terms of Service</a> and understand Pro renews automatically until I cancel.</span></label>
+        <div class="err" id="agreeErr" style="margin-top:6px"></div>
+      </form>
+
+      <aside class="summary">
+        <section class="box">
+          <div class="box-head"><h2>Order summary</h2></div>
+          <div class="box-body">
+            <div class="sum-plan"><span class="mk"><span></span></span><div><strong>Privacy Checkup Pro</strong><small id="sumPer">Yearly plan</small></div></div>
+            <div class="line"><span>Pro plan</span><span id="lPrice">₹846.61</span></div>
+            <div class="line disc" id="lDiscRow" hidden><span id="lDiscName">Discount</span><span id="lDisc">−₹0</span></div>
+            <div class="line"><span>GST (18%)</span><span id="lGst">₹152.39</span></div>
+            <div class="line total"><span>Total today</span><span id="lTotal">₹999.00</span></div>
+            <div class="promo"><input class="in mono" id="code" placeholder="Promo code" aria-label="Promo code"><button class="btn btn-ghost" type="button" id="apply">Apply</button></div>
+            <div class="promo-msg" id="promoMsg">Try <b>FIRST50</b> for the demo</div>
+            <button class="btn btn-primary pay" type="submit" form="form" id="payBtn">Pay ₹999.00</button>
+            <p class="renew" id="renew">Renews on 24 Sep 2027 at ₹999/year. Cancel any time from your Account page. Full refund if you cancel within 7 days.</p>
+            <ul class="trust">
+              <li>Secure payment, handled by our payment provider</li>
+              <li>We never see or store your card number</li>
+              <li>GST invoice emailed to you</li>
+            </ul>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <div class="success" id="success" aria-live="polite">
+    <div class="seal"><svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <p class="eyebrow">Payment successful</p>
+    <h1 style="margin-bottom:12px">You're on Pro. Welcome.</h1>
+    <p class="lede" style="margin:0 auto">We'll check your accounts every week and alert you the moment something new turns up. Your invoice is on its way to <b id="sEmail">aarav@gmail.com</b>.</p>
+    <div class="box receipt">
+      <div class="box-body">
+        <div class="line"><span>Order</span><span id="sOrder">PC-2026-004817</span></div>
+        <div class="line"><span>Plan</span><span id="sPlan">Pro · Yearly</span></div>
+        <div class="line"><span>Paid with</span><span id="sMethod">UPI</span></div>
+        <div class="line"><span>Amount</span><span id="sAmt">₹999.00</span></div>
+        <div class="line"><span>Next renewal</span><span id="sNext">24 Sep 2027</span></div>
+      </div>
+    </div>
+    <div class="actions">
+      <a class="btn btn-primary" href="account.html#checks">Turn on alerts</a>
+      <a class="btn btn-ghost" href="account.html#connections">Add another account</a>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  const st = PC.get();
+  // Already on Pro: nothing to buy.
+  if (st.plan === 'pro') location.replace('account.html?alreadypro=1#checks');
+  $('bname').value = st.name;
+  $('bemail').value = st.alertEmail || st.email;
+
+  const PRICE = { y: 999, m: 149 };
+  let bill = new URLSearchParams(location.search).get('b') === 'm' ? 'm' : 'y';
+  let discount = 0, method = 'upi';
+  document.querySelector(`input[name=bill][value=${bill}]`).checked = true;
+  const inr = n => '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  function render() {
+    const gross = PRICE[bill];
+    const total = Math.round(gross * (1 - discount) * 100) / 100;
+    const base = total / 1.18;
+    $('lPrice').textContent = inr(gross / 1.18);
+    $('lDiscRow').hidden = !discount;
+    $('lDisc').textContent = '−' + inr((gross - total) / 1.18);
+    $('lGst').textContent = inr(total - base);
+    $('lTotal').textContent = inr(total);
+    $('payBtn').textContent = 'Pay ' + inr(total);
+    $('qrAmt').textContent = inr(total);
+    $('sumPer').textContent = bill === 'y' ? 'Yearly plan' : 'Monthly plan';
+    $('renew').textContent = (bill === 'y' ? 'Renews on 24 Sep 2027 at ₹999/year.' : 'Renews on 24 Oct 2026 at ₹149/month.') +
+      (discount ? ' Discount applies to the first payment only.' : '') + ' Cancel any time from your Account page. Full refund if you cancel within 7 days.';
+  }
+  document.querySelectorAll('input[name=bill]').forEach(r => r.addEventListener('change', () => { bill = r.value; render(); }));
+
+  $('apply').addEventListener('click', () => {
+    const c = $('code').value.trim().toUpperCase(), m = $('promoMsg');
+    if (c === 'FIRST50') { discount = .5; m.className = 'promo-msg ok'; m.textContent = '✓ FIRST50 applied: 50% off your first payment'; $('lDiscName').textContent = 'FIRST50 (50% off)'; }
+    else { discount = 0; m.className = 'promo-msg bad'; m.textContent = c ? "That code isn't valid." : 'Enter a code first.'; }
+    render();
+  });
+
+  document.querySelectorAll('.tabs button').forEach(t => t.addEventListener('click', () => {
+    method = t.dataset.m;
+    document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === t));
+    document.querySelectorAll('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== method);
+  }));
+  document.querySelectorAll('.app').forEach(a => a.addEventListener('click', () => {
+    document.querySelectorAll('.app').forEach(x => x.setAttribute('aria-pressed', x === a));
+    $('upi').value = ''; $('upiErr').textContent = '';
+  }));
+
+  // Input formatting
+  $('cc').addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim());
+  $('exp').addEventListener('input', e => { const d = e.target.value.replace(/\D/g, '').slice(0, 4); e.target.value = d.length > 2 ? d.slice(0, 2) + ' / ' + d.slice(2) : d; });
+  $('cvv').addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, ''));
+
+  function validate() {
+    let ok = true;
+    const bad = (el, errEl, msg) => { el.setAttribute('aria-invalid', 'true'); $(errEl).textContent = msg; ok = false; };
+    document.querySelectorAll('[aria-invalid]').forEach(e => e.removeAttribute('aria-invalid'));
+    ['upiErr', 'ccErr', 'agreeErr'].forEach(id => $(id).textContent = '');
+    if (method === 'upi') {
+      const appPicked = document.querySelector('.app[aria-pressed="true"]');
+      if (!appPicked && !/^[\w.\-]{2,}@[a-z]{2,}$/i.test($('upi').value.trim())) bad($('upi'), 'upiErr', 'Enter a UPI ID like name@okbank, or pick an app.');
+    }
+    if (method === 'card') {
+      if ($('cc').value.replace(/\s/g, '').length < 15) bad($('cc'), 'ccErr', 'Check the card number.');
+      else if (!/^(0[1-9]|1[0-2]) \/ \d\d$/.test($('exp').value)) bad($('exp'), 'ccErr', 'Enter expiry as MM / YY.');
+      else if ($('cvv').value.length < 3) bad($('cvv'), 'ccErr', 'Enter the 3 or 4 digit CVV.');
+    }
+    if (!$('agree').checked) { $('agreeErr').textContent = 'Please agree to the terms to continue.'; ok = false; }
+    return ok;
+  }
+
+  $('form').addEventListener('submit', e => {
+    e.preventDefault();
+    if (!validate()) return;
+    const btn = $('payBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>' + (method === 'upi' ? 'Waiting for UPI approval…' : method === 'card' ? 'Confirming with your bank…' : 'Opening your bank…');
+    setTimeout(() => {
+      PC.set({ plan: 'pro', billing: bill, renews: bill === 'y' ? '24 Sep 2027' : '24 Oct 2026', settings: { ...st.settings, weekly: true, alerts: true } });
+      $('sEmail').textContent = $('bemail').value;
+      $('sPlan').textContent = 'Pro · ' + (bill === 'y' ? 'Yearly' : 'Monthly');
+      $('sMethod').textContent = method === 'upi' ? 'UPI' : method === 'card' ? 'Card ending ' + $('cc').value.replace(/\s/g, '').slice(-4) : 'Net banking';
+      $('sAmt').textContent = $('lTotal').textContent;
+      $('sNext').textContent = bill === 'y' ? '24 Sep 2027' : '24 Oct 2026';
+      $('sOrder').textContent = 'PC-2026-' + String(Math.floor(Math.random() * 900000) + 100000);
+      $('checkout').hidden = true;
+      $('success').classList.add('on');
+      scrollTo(0, 0);
+    }, 2200);
+  });
+
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Checkup · All clear</title>
+<script src="state.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;450;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  main { display: grid; place-items: center; text-align: center; padding: 72px 0 120px; }
+  .seal { width: 88px; height: 88px; border-radius: 50%; border: 1px solid rgba(69,165,87,.4); display: grid; place-items: center; color: var(--ok); margin-bottom: 32px; position: relative; }
+  .seal::before, .seal::after { content: ""; position: absolute; inset: -1px; border-radius: 50%; border: 1px solid var(--ok); animation: ring 2.8s ease-out infinite; }
+  .seal::after { animation-delay: 1.4s; }
+  @keyframes ring { from { transform: scale(1); opacity: .6; } to { transform: scale(1.8); opacity: 0; } }
+  .seal svg { width: 32px; height: 32px; }
+  h1 { max-width: 620px; }
+  .lede { margin: 0 auto 48px; }
+  .frame { width: 100%; max-width: 640px; text-align: left; margin-bottom: 40px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; position: relative; z-index: 1; }
+  .grid > div { padding: 20px 24px; }
+  .grid > div + div { border-left: 1px solid var(--line); }
+  .grid h3 { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: .071em; text-transform: uppercase; color: var(--text-3); margin-bottom: 12px; }
+  .grid ul { list-style: none; display: grid; gap: 10px; font-family: var(--mono); font-size: 13px; }
+  .grid li { display: grid; grid-template-columns: 18px 1fr; gap: 6px; }
+  .grid .no li { color: var(--text-2); }
+  .y { color: var(--ok); } .x { color: var(--text-3); }
+  .next { position: relative; z-index: 1; border-top: 1px solid var(--line); padding: 14px 24px; font-family: var(--mono); font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 8px; }
+  .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } .grid > div + div { border-left: 0; border-top: 1px solid var(--line); } }
+  @media (prefers-reduced-motion: reduce) { .seal::before, .seal::after { animation: none; opacity: 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="connect.html"><span class="mark" aria-hidden="true"></span>Privacy Checkup</a>
+    <div class="account"><span class="avatar">A</span>aarav@gmail.com</div>
+  </nav>
+
+  <main>
+    <div class="seal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <p class="eyebrow" id="eb">Check complete · just now</p>
+    <h1 id="title">Nothing exposed. You're in good shape.</h1>
+    <p class="lede" id="sub">We didn't find any problems this time. Here's exactly what we looked at, so you know what "all clear" means.</p>
+
+    <div class="frame">
+      <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span>
+      <span class="corner br" aria-hidden="true"></span><span class="corner bl" aria-hidden="true"></span>
+      <section class="panel" aria-label="What was checked">
+        <div class="scan" aria-hidden="true"></div>
+        <div class="grid">
+          <div>
+            <h3>What we checked</h3>
+            <ul>
+              <li id="t-files"><span class="y">✓</span><span></span></li>
+              <li id="t-mail"><span class="y">✓</span><span></span></li>
+              <li id="t-leak"><span class="y">✓</span><span></span></li>
+            </ul>
+          </div>
+          <div class="no">
+            <h3>What we can't see</h3>
+            <ul>
+              <li><span class="x">–</span>Other accounts you haven't connected</li>
+              <li><span class="x">–</span>Leaks that aren't public yet</li>
+              <li><span class="x">–</span>Your phone or computer itself</li>
+            </ul>
+          </div>
+        </div>
+        <div class="next"><span class="dot" aria-hidden="true"></span>New leaks happen all the time. We suggest checking again in a month.</div>
+      </section>
+    </div>
+
+    <div class="actions">
+      <a class="btn btn-primary" href="scanning.html">Run the check again</a>
+      <a class="btn btn-ghost" href="account.html#connections">Connect another account</a>
+    </div>
+  </main>
+</div>
+
+<div class="demo-bar" aria-label="Demo screens">
+  <a href="connect.html">1 Welcome</a><a href="ready.html">2 Start</a><a href="scanning.html">3 Checking</a><a href="results.html">4 Problems</a><a href="clear.html" aria-current="page">5 All clear</a><a href="pricing.html">Pricing</a><a href="account.html">Account</a>
+</div>
+
+<script>
+  const st = PC.get(), L = PC.labels(), T = PC.totals();
+  const row = (id, on, text) => { const li = document.getElementById(id); if (on) li.lastElementChild.textContent = text; else li.remove(); };
+  row('t-files', T.files, `${T.files} files in ${L.files}`);
+  row('t-mail', T.emails, `${T.emails} security emails in ${L.mail}`);
+  row('t-leak', T.leaks, `900+ known leaks for ${st.email}`);
+  const n = Number(new URLSearchParams(location.search).get('fixed'));
+  const probs = PC.problems();
+  if (n || (probs.length && probs.every(p => PC.fixed().includes(p.id)))) {
+    const count = n || probs.length;
+    document.getElementById('title').textContent = `All ${count} problem${count === 1 ? '' : 's'} fixed. Nice work.`;
+    document.getElementById('sub').textContent = 'Your account is in much better shape. Keep the habits from each tip, and check again in a month.';
+    document.getElementById('eb').textContent = 'Everything fixed';
+  }
+</script>
+<script src="shared.js"></script>
+</body>
+</html>
