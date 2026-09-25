@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo Sign-in</title>
+<script src="state.js"></script>
+<style>
+  body { background: #000; color: #ededed; font: 14px/1.5 ui-sans-serif, system-ui, "Segoe UI", sans-serif; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 16px; box-sizing: border-box; text-align: center; }
+  p { color: #a1a1a1; max-width: 360px; }
+</style>
+</head>
+<body>
+<main>
+  <h1 style="font-size:18px;font-weight:500">Signing you in to the demo…</h1>
+  <p>Testing version: no real account is used. You're signed in with a sample account and sample results.</p>
+</main>
+<script>
+  // Stand-in for the real "Sign in with Google/Microsoft", which replaces this page later.
+  const q = new URLSearchParams(location.search);
+  const provider = q.get('p') === 'microsoft' ? 'microsoft' : 'google';
+  const email = provider === 'microsoft' ? 'demo.user@outlook.com' : 'demo.user@gmail.com';
+  const adding = q.has('add') && PC.get().session;
+  setTimeout(() => {
+    if (adding) { PC.addAccount(provider, provider === 'microsoft' ? 'demo.work@outlook.com' : 'demo.second@gmail.com'); location.replace('account.html?added=' + provider + '#connections'); }
+    else { PC.signIn(provider, email); location.replace('ready.html'); }
+  }, 700);
+</script>
+</body>
+</html>

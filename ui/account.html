@@ -203,7 +203,7 @@
     const used = connectedCount() + st.extra.length, full = used >= 5;
     rows.push(`<div class="conn"><span class="logo-box add" aria-hidden="true">+</span>
       <div><strong>Add another account${pro ? '' : ' <span class="pill pro">Pro</span>'}</strong><div class="meta">${pro ? `${used} of 5 accounts used` : 'Check a work or family account too'}</div></div>
-      <div class="btns">${!pro ? '<a class="btn btn-ghost btn-sm" href="pricing.html">Upgrade to Pro</a>' : full ? '<span class="meta">Limit reached</span>' : '<a class="btn btn-ghost btn-sm" href="google.html?add=1">Add Google</a><a class="btn btn-ghost btn-sm" href="microsoft.html?add=1">Add Microsoft</a>'}</div></div>`);
+      <div class="btns">${!pro ? '<a class="btn btn-ghost btn-sm" href="pricing.html">Upgrade to Pro</a>' : full ? '<span class="meta">Limit reached</span>' : '<a class="btn btn-ghost btn-sm" href="signin.html?p=google&add=1">Add Google</a><a class="btn btn-ghost btn-sm" href="signin.html?p=microsoft&add=1">Add Microsoft</a>'}</div></div>`);
     $('connList').innerHTML = rows.join('');
   }
   renderConns();
