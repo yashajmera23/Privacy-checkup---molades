@@ -64,7 +64,42 @@
   .foot-note { font-family: var(--mono); font-size: 12px; color: var(--text-3); border-top: 1px solid var(--line); padding: 20px 0 0; margin-top: 8px; display: flex; gap: 24px; flex-wrap: wrap; }
   .foot-note span::before { content: "✓ "; color: var(--ok); }
 
+  /* "Help us check better": tips that improve results without opening any file. */
+  .guide { margin-top: 32px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow: hidden; }
+  .guide-head { padding: 20px 24px; border-bottom: 1px solid var(--line); }
+  .guide-head .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .071em; text-transform: uppercase; color: var(--text-3); margin-bottom: 6px; }
+  .guide-head h2 { margin-bottom: 6px; }
+  .guide-head p { color: var(--text-2); max-width: 640px; }
+  .guide-head .trust { margin-top: 10px; font-family: var(--mono); font-size: 12px; color: var(--ok); }
+  .tips { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .tip { padding: 20px 24px; }
+  .tip + .tip { border-left: 1px solid var(--line); }
+  .tip .n { font-family: var(--mono); font-size: 11px; color: var(--text-3); margin-bottom: 8px; }
+  .tip h3 { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .tip p { color: var(--text-2); font-size: 13px; }
+  .names { margin-top: 10px; display: grid; gap: 4px; font-family: var(--mono); font-size: 12px; }
+  .names span { display: flex; gap: 8px; }
+  .names .bad { color: var(--text-3); text-decoration: line-through; }
+  .names .good { color: var(--text); }
+  .unclear { border-top: 1px solid var(--line); padding: 20px 24px; background: #070707; }
+  .unclear h3 { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: .071em; text-transform: uppercase; color: var(--text-3); margin-bottom: 12px; }
+  .uf { display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: center; padding: 10px 0; }
+  .uf + .uf { border-top: 1px solid var(--line); }
+  .uf .thumb { width: 44px; height: 44px; border-radius: 6px; border: 1px solid var(--line-strong); background: repeating-linear-gradient(135deg, #151515 0 6px, #1b1b1b 6px 12px); display: grid; place-items: center; font-family: var(--mono); font-size: 10px; color: var(--text-3); }
+  .uf .nm { font-family: var(--mono); font-size: 13px; }
+  .uf .meta { font-size: 12px; color: var(--text-3); }
+  .uf .acts { display: flex; gap: 6px; }
+  .uf .acts button { background: none; border: 1px solid var(--line-strong); color: var(--text-2); font: inherit; font-size: 12px; height: 30px; padding: 0 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+  .uf .acts button:hover { color: var(--text); }
+  .uf .acts button[aria-pressed="true"] { color: var(--text); border-color: var(--text-2); background: var(--surface-2); }
+  .uf .acts button.personal[aria-pressed="true"] { color: var(--danger); border-color: rgba(255,77,77,.5); }
+  .unclear .note { margin-top: 12px; font-size: 12px; color: var(--text-3); }
+
   @media (max-width: 860px) {
+    .tips { grid-template-columns: 1fr; }
+    .tip + .tip { border-left: 0; border-top: 1px solid var(--line); }
+    .uf { grid-template-columns: 44px 1fr; }
+    .uf .acts { grid-column: 1 / -1; }
     header.top { grid-template-columns: 1fr; padding-top: 32px; }
     .card-head { grid-template-columns: 1fr; }
     .card .box { display: none; }
@@ -95,6 +130,42 @@
   </div>
 
   <div class="list" id="list"></div>
+  <section class="guide" aria-labelledby="guideTitle">
+    <div class="guide-head">
+      <p class="eyebrow">Help us check better</p>
+      <h2 id="guideTitle">Better results, without us opening your files</h2>
+      <p>We only see file names, file types and who they're shared with. We never see what's inside. So a passport scan called <b>IMG_2043.jpg</b> looks like any other photo to us. Three small habits fix that.</p>
+      <p class="trust">✓ We never open, read or save your files. This stays true.</p>
+    </div>
+    <div class="tips">
+      <div class="tip">
+        <p class="n">01</p>
+        <h3>Name personal documents clearly</h3>
+        <p>Say what it is, so we can warn you the moment it's shared openly.</p>
+        <div class="names">
+          <span><span class="bad">IMG_2043.jpg</span> → <span class="good">Passport - Aarav.jpg</span></span>
+          <span><span class="bad">Scan 12.pdf</span> → <span class="good">Aadhaar card.pdf</span></span>
+          <span><span class="bad">doc(3).pdf</span> → <span class="good">Bank statement Mar 2026.pdf</span></span>
+        </div>
+      </div>
+      <div class="tip">
+        <p class="n">02</p>
+        <h3>Keep them in one "Private documents" folder</h3>
+        <p>We watch any folder with "private" or "documents" in its name more closely, and flag it if anything inside is shared outside your circle.</p>
+      </div>
+      <div class="tip">
+        <p class="n">03</p>
+        <h3>Tell us about unclear files</h3>
+        <p>Below are shared photos and PDFs whose names don't tell us what they are. Mark each one once, and every future check remembers.</p>
+      </div>
+    </div>
+    <div class="unclear">
+      <h3 id="ufTitle">Shared files with unclear names</h3>
+      <div id="ufList"></div>
+      <p class="note">Previews are shown only to you, in your browser. We remember which file you marked, not what's in it.</p>
+    </div>
+  </section>
+
   <div class="foot-note" id="foot"></div>
   <div style="display:flex;gap:10px;margin:24px 0 120px;flex-wrap:wrap">
     <a class="btn btn-ghost btn-sm" href="scanning.html">Run the check again</a>
@@ -175,6 +246,36 @@
     document.querySelectorAll('.filters button').forEach(x => x.setAttribute('aria-pressed', x === b));
     cards.forEach(c => c.hidden = b.dataset.f !== 'all' && c.dataset.cat !== b.dataset.f);
   }));
+
+  // Unclear files: sample data for the demo. Real version lists public photos/PDFs with vague names.
+  const UNCLEAR = [
+    { id: 'u1', name: 'IMG_2043.jpg', kind: 'JPG', meta: 'Photo · anyone with the link can open' },
+    { id: 'u2', name: 'Scan 12.pdf', kind: 'PDF', meta: 'PDF · shared with 3 people outside your circle' },
+    { id: 'u3', name: 'doc(3).pdf', kind: 'PDF', meta: 'PDF · anyone with the link can open' },
+  ];
+  let marks = {};
+  try { marks = JSON.parse(localStorage.getItem('pc-unclear') || '{}'); } catch (e) {}
+  const drawUnclear = () => {
+    document.getElementById('ufList').innerHTML = UNCLEAR.map(u => `<div class="uf" data-id="${u.id}">
+      <span class="thumb" aria-hidden="true">${u.kind}</span>
+      <div><div class="nm">${u.name}</div><div class="meta">${u.meta}</div></div>
+      <div class="acts" role="group" aria-label="What is ${u.name}?">
+        <button class="personal" type="button" data-v="personal" aria-pressed="${marks[u.id] === 'personal'}">Personal document</button>
+        <button type="button" data-v="fine" aria-pressed="${marks[u.id] === 'fine'}">Not personal</button>
+      </div></div>`).join('');
+    const left = UNCLEAR.filter(u => !marks[u.id]).length;
+    document.getElementById('ufTitle').textContent = left ? `Shared files with unclear names · ${left} to review` : 'Shared files with unclear names · all reviewed';
+  };
+  document.getElementById('ufList').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const id = b.closest('.uf').dataset.id;
+    marks[id] = marks[id] === b.dataset.v ? undefined : b.dataset.v;
+    try { localStorage.setItem('pc-unclear', JSON.stringify(marks)); } catch (e) {}
+    drawUnclear();
+    if (marks[id] === 'personal') toast('Got it. We\'ll treat this file as a personal document from now on. Make its link private to be safe.');
+    else if (marks[id] === 'fine') toast('Noted. We won\'t flag this file again.');
+  });
+  drawUnclear();
 
   // Nothing to show at all: go straight to the all-clear screen.
   if (!cards.length) location.replace('clear.html');

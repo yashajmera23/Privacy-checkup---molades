@@ -38,7 +38,7 @@
 
   window.resetDemo = async () => {
     const ok = await confirmBox({ title: 'Reset the demo?', body: 'Clears everything saved in this browser (sign-in, profile, plan, fixed problems) and starts from the welcome screen.', ok: 'Reset demo', danger: true });
-    if (ok) { PC.reset(); location.href = 'connect.html?reset=1'; }
+    if (ok) { PC.reset(); try { localStorage.removeItem('pc-unclear'); } catch {} location.href = 'connect.html?reset=1'; }
   };
 
   // Top-right: account menu when signed in, sign-in button when not.
