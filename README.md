@@ -6,6 +6,6 @@ files shared too widely, security emails you missed, and leaked passwords, each 
 
 - `PRD.md`: the product spec.
 - `ui/`: the current front end (static HTML/CSS/JS). Run it locally with `node ui/serve.js`,
-  then open http://localhost:4321.
+  then open http://localhost:4322.
 
 Status: front-end prototype. Real Google sign-in and scanning are next.

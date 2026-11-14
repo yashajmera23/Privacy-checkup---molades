@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = __dirname;
-const port = 4321;
+const port = Number(process.env.PORT) || 4322;   // 4321 is Astro's default and often taken
 const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png' };
 
 http.createServer((req, res) => {
